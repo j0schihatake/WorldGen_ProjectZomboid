@@ -144,6 +144,23 @@ public final class WorldGenTest {
         catch (IllegalArgumentException expected) { }
         try { new WorldGenSession(sessionProfile, sessionPlanner, ""); throw new AssertionError("Empty version accepted"); }
         catch (IllegalArgumentException expected) { }
+        var campSite = new Site(0, 0, 64, 64);
+        var camp = CampPlanner.plan(campSite, "0.1.0", 42, 8);
+        assert camp.operations() == 8 : "Camp must contain the requested props";
+        assert camp.equals(CampPlanner.plan(campSite, "0.1.0", 42, 8)) : "Same seed gives the same camp";
+        var cells = new java.util.HashSet<String>();
+        for (var step : camp.steps()) {
+            assert step.dx() >= 4 && step.dx() < 60 && step.dy() >= 4 && step.dy() < 60 : "Step inside the site";
+            assert cells.add(step.dx() + ":" + step.dy()) : "No two props on one cell";
+        }
+        try { CampPlanner.plan(campSite, "0.1.0", 42, 0); throw new AssertionError("Zero props accepted"); }
+        catch (IllegalArgumentException expected) { }
+        try { CampPlanner.plan(campSite, "0.1.0", 42, CampPlanner.MAX_PROPS + 1); throw new AssertionError("Too many props accepted"); }
+        catch (IllegalArgumentException expected) { }
+        try { CampPlanner.plan(new Site(0, 0, 8, 8), "0.1.0", 42, 1); throw new AssertionError("Tiny site accepted"); }
+        catch (IllegalArgumentException expected) { }
+        try { CampPlanner.plan(null, "0.1.0", 42, 1); throw new AssertionError("Null site accepted"); }
+        catch (IllegalArgumentException expected) { }
         System.out.println("World-generation tests passed: site bounds, deterministic search, protected cells, reservations, budget queue, pause, map profiles, time budget and plan commit.");
     }
 }
