@@ -88,6 +88,42 @@ public final class WorldGenTest {
         catch (IllegalArgumentException expected) { }
         try { new MapProfile("42.21.0", null); throw new AssertionError("Null cells accepted"); }
         catch (IllegalArgumentException expected) { }
-        System.out.println("World-generation tests passed: site bounds, deterministic search, protected cells, reservations, budget queue, pause and map profiles.");
+
+        var stepA = new PlanStep("wall", 0, 0);
+        var stepB = new PlanStep("floor", 1, 1);
+        var plan = new SitePlan(new Site(0, 0, 64, 64), "42.21.0", java.util.List.of(stepA, stepB));
+        assert plan.operations() == 2 : "Plan must count its steps";
+        var mutable = new java.util.ArrayList<>(java.util.List.of(stepA));
+        var copied = new SitePlan(new Site(0, 0, 64, 64), "42.21.0", mutable);
+        mutable.clear();
+        assert copied.operations() == 1 : "Plan must copy its steps";
+        try { new PlanStep("", 0, 0); throw new AssertionError("Empty step kind accepted"); }
+        catch (IllegalArgumentException expected) { }
+        try { new PlanStep("wall", Site.MAX_SIZE + 1, 0); throw new AssertionError("Oversized step accepted"); }
+        catch (IllegalArgumentException expected) { }
+        try { new SitePlan(null, "v", java.util.List.of(stepA)); throw new AssertionError("Null site accepted"); }
+        catch (IllegalArgumentException expected) { }
+        try { new SitePlan(new Site(0, 0, 1, 1), "v", java.util.List.of()); throw new AssertionError("Empty plan accepted"); }
+        catch (IllegalArgumentException expected) { }
+        try { new SitePlan(new Site(0, 0, 1, 1), "", java.util.List.of(stepA)); throw new AssertionError("Empty version accepted"); }
+        catch (IllegalArgumentException expected) { }
+
+        var planned = new GenerationQueue();
+        var order = new StringBuilder();
+        planned.addPlan(plan, step -> order.append(step.kind()));
+        assert planned.pendingOps() == 2;
+        assert planned.run(1, System.nanoTime() + 1_000_000_000L) == 1;
+        assert order.toString().equals("wall") : "Plan steps run in order";
+        assert planned.run(10, System.nanoTime() - 1_000_000L) == 0 : "Past deadline stops work";
+        assert planned.run(10, System.nanoTime() + 1_000_000_000L) == 1;
+        assert order.toString().equals("wallfloor");
+        planned.addPlan(plan, step -> order.append("x"));
+        planned.clear();
+        assert planned.pendingOps() == 0 : "Clear must drop pending work";
+        try { planned.addPlan(null, step -> { }); throw new AssertionError("Null plan accepted"); }
+        catch (IllegalArgumentException expected) { }
+        try { planned.addPlan(plan, null); throw new AssertionError("Null executor accepted"); }
+        catch (IllegalArgumentException expected) { }
+        System.out.println("World-generation tests passed: site bounds, deterministic search, protected cells, reservations, budget queue, pause, map profiles, time budget and plan commit.");
     }
 }
