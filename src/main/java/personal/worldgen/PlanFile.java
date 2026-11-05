@@ -26,6 +26,29 @@ public final class PlanFile {
         return out.toString();
     }
 
+    public record Command(String version, String kind, int x, int y, int z) {
+        public Command {
+            if (version == null || version.isBlank() || kind == null || kind.isBlank())
+                throw new IllegalArgumentException("Invalid command");
+        }
+    }
+
+    public static List<Command> read(Path file) throws IOException {
+        if (file == null) throw new IllegalArgumentException("Missing file");
+        var result = new java.util.ArrayList<Command>();
+        for (var line : Files.readAllLines(file, StandardCharsets.UTF_8)) {
+            if (line.isBlank() || line.startsWith("#")) continue;
+            var p = line.split("\t", -1);
+            if (p.length != 6) throw new IllegalArgumentException("Invalid plan line");
+            try {
+                result.add(new Command(p[0], p[2], Integer.parseInt(p[3]), Integer.parseInt(p[4]), Integer.parseInt(p[5])));
+            } catch (RuntimeException invalid) {
+                throw new IllegalArgumentException("Invalid plan line", invalid);
+            }
+        }
+        return List.copyOf(result);
+    }
+
     public static void write(Path file, List<SitePlan> plans) throws IOException {
         if (file == null) throw new IllegalArgumentException("Missing file");
         Files.writeString(file, encode(plans), StandardCharsets.UTF_8);
