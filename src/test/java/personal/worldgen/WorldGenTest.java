@@ -189,6 +189,32 @@ public final class WorldGenTest {
         catch (IllegalArgumentException expected) { }
         try { BuildingPlanner.plan(new Site(0, 0, 32, 32), "0.1.0", 1, 1); throw new AssertionError("Tiny site accepted"); }
         catch (IllegalArgumentException expected) { }
+        var building = BuildingPlanner.planBuilding(houseSite, "0.1.0", 11, 3);
+        assert building.rooms().size() == 3 : "Building must expose three rooms";
+        long roomArea = 0;
+        for (var room : building.rooms()) {
+            assert room.width() > 0 && room.height() > 0;
+            assert room.x() > 8 && room.y() > 8 && room.x() + room.width() <= 120 && room.y() + room.height() <= 120;
+            roomArea += (long) room.width() * room.height();
+        }
+        assert roomArea > 0 : "Rooms must not be empty";
+        assert building.asSitePlan("0.1.0").operations() == building.steps().size();
+        try { new BuildingPlan(houseSite, java.util.List.of(), building.steps()); throw new AssertionError("Empty building accepted"); }
+        catch (IllegalArgumentException expected) { }
+        var validPlan = new SitePlan(new Site(0, 0, 32, 32), "0.1.0", java.util.List.of(
+                new PlanStep("wall", 0, 0), new PlanStep("floor", 10, 10)));
+        assert PlanValidator.validate(validPlan, new ProtectedCells(256, java.util.Set.of()), 0).isEmpty();
+        var outside = new SitePlan(new Site(0, 0, 32, 32), "0.1.0", java.util.List.of(
+                new PlanStep("wall", 32, 0)));
+        assert PlanValidator.validate(outside, new ProtectedCells(256, java.util.Set.of()), 0).get(0).reason().equals("out_of_bounds");
+        var protectedPlan = new SitePlan(new Site(0, 0, 32, 32), "0.1.0", java.util.List.of(
+                new PlanStep("wall", 0, 0)));
+        var blockedGuard = new ProtectedCells(16, java.util.Set.of(new ProtectedCells.Cell(0, 0)));
+        assert PlanValidator.validate(protectedPlan, blockedGuard, 0).get(0).reason().equals("protected");
+        try { PlanValidator.validate(null, blockedGuard, 0); throw new AssertionError("Null plan accepted"); }
+        catch (IllegalArgumentException expected) { }
+        try { PlanValidator.validate(validPlan, blockedGuard, -1); throw new AssertionError("Negative padding accepted"); }
+        catch (IllegalArgumentException expected) { }
         System.out.println("World-generation tests passed: site bounds, deterministic search, protected cells, reservations, budget queue, pause, map profiles, time budget and plan commit.");
     }
 }

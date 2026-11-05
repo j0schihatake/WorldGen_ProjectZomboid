@@ -15,6 +15,10 @@ public final class BuildingPlanner {
     private BuildingPlanner() {}
 
     public static SitePlan plan(Site site, String version, long seed, int rooms) {
+        return planBuilding(site, version, seed, rooms).asSitePlan(version);
+    }
+
+    public static BuildingPlan planBuilding(Site site, String version, long seed, int rooms) {
         if (site == null) throw new IllegalArgumentException("Missing site");
         if (version == null || version.isBlank()) throw new IllegalArgumentException("Missing version");
         if (rooms <= 0 || rooms > MAX_ROOMS) throw new IllegalArgumentException("Invalid room count");
@@ -53,7 +57,14 @@ public final class BuildingPlanner {
             for (int y = MARGIN + 1; y < MARGIN + height - 1; y++)
                 add(steps, used, "floor", x, y);
 
-        return new SitePlan(site, version, steps);
+        var roomList = new ArrayList<BuildingPlan.Room>();
+        int left = MARGIN + 1;
+        for (int room = 0; room < rooms; room++) {
+            int right = room == rooms - 1 ? MARGIN + width - 1 : MARGIN + (room + 1) * width / rooms;
+            if (right > left) roomList.add(new BuildingPlan.Room(left, MARGIN + 1, right - left, height - 2));
+            left = right;
+        }
+        return new BuildingPlan(site, roomList, steps);
     }
 
     private static void add(List<PlanStep> steps, HashSet<Long> used, String kind, int x, int y) {
