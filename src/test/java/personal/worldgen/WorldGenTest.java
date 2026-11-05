@@ -218,6 +218,15 @@ public final class WorldGenTest {
         catch (IllegalArgumentException expected) { }
         try { PlanValidator.validate(validPlan, blockedGuard, -1); throw new AssertionError("Negative padding accepted"); }
         catch (IllegalArgumentException expected) { }
+        var settlement = SettlementPlanner.plan(new Site(0, 0, 64, 64), new Site(80, 0, 64, 64),
+                new Site(180, 100, 32, 32), "0.1.0", 7);
+        assert settlement.camp().operations() > 0 && settlement.building().steps().size() > 0;
+        assert settlement.road().get(settlement.road().size() - 1).equals(new RoadPlanner.Point(196, 116));
+        try { SettlementPlanner.plan(new Site(0, 0, 64, 64), new Site(10, 10, 64, 64),
+                new Site(100, 100, 32, 32), "0.1.0", 1); throw new AssertionError("Overlap accepted"); }
+        catch (IllegalArgumentException expected) { }
+        try { SettlementPlanner.plan(null, new Site(0, 0, 64, 64), new Site(1, 1, 1, 1), "0.1.0", 1); throw new AssertionError("Null site accepted"); }
+        catch (IllegalArgumentException expected) { }
         System.out.println("World-generation tests passed: site bounds, deterministic search, protected cells, reservations, budget queue, pause, map profiles, time budget and plan commit.");
     }
 }
