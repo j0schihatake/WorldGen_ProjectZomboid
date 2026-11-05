@@ -159,6 +159,15 @@ public final class WorldGenTest {
                 java.util.List.of(new Site(0, 0, 64, 64)), java.util.List.of(new Site(10, 0, 64, 64)),
                 new Site(200, 100, 32, 32), "0.1.0", 7, districtGuard, 0); throw new AssertionError("Overlap accepted"); }
         catch (IllegalArgumentException expected) { }
+        var districtSession = new WorldGenSession(sessionProfile,
+                new SitePlanner(new ProtectedCells(256, sessionProfile), 32, 32, 0, 64, 0, 0, 1024, 1024, 5),
+                "0.1.0");
+        var plannedDistrict = districtSession.planDistrict(
+                java.util.List.of(new Site(0, 0, 64, 64), new Site(200, 0, 64, 64)),
+                java.util.List.of(new Site(80, 0, 64, 64), new Site(280, 0, 64, 64)),
+                new Site(400, 100, 32, 32), 9, step -> { });
+        assert plannedDistrict.settlements().size() == 2;
+        assert districtSession.stats().pending() > 0;
         session.pause();
         assert session.status().paused() && session.tick(10, System.nanoTime() + 1_000_000_000L) == 0;
         session.resume();
@@ -253,6 +262,7 @@ public final class WorldGenTest {
         try { SettlementPlanner.planValidated(new Site(0, 0, 64, 64), new Site(80, 0, 64, 64),
                 new Site(180, 100, 32, 32), "0.1.0", 7, settlementBlockedGuard, 0); throw new AssertionError("Protected settlement accepted"); }
         catch (IllegalArgumentException expected) { }
+        personal.worldgen.PlanFileTest.run();
         System.out.println("World-generation tests passed: site bounds, deterministic search, protected cells, reservations, budget queue, pause, map profiles, time budget and plan commit.");
     }
 }
