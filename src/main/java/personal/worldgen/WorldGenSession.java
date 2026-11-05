@@ -10,6 +10,7 @@ public final class WorldGenSession {
     private final MapProfile profile;
     private final SitePlanner planner;
     private final GenerationQueue queue = new GenerationQueue();
+    private final ProtectedCells guard;
     private final String generatorVersion;
     private int plannedSites;
     private Site lastSite;
@@ -20,6 +21,7 @@ public final class WorldGenSession {
             throw new IllegalArgumentException("Missing generator version");
         this.profile = profile;
         this.planner = planner;
+        this.guard = new ProtectedCells(256, profile);
         this.generatorVersion = generatorVersion;
     }
 
@@ -34,7 +36,13 @@ public final class WorldGenSession {
         return site;
     }
 
+    public java.util.List<PlanValidator.Issue> validate(SitePlan plan) {
+        return PlanValidator.validate(plan, guard, 0);
+    }
+
     public void enqueue(SitePlan plan, Consumer<PlanStep> executor) {
+        var issues = validate(plan);
+        if (!issues.isEmpty()) throw new IllegalArgumentException("Invalid plan: " + issues);
         queue.addPlan(plan, executor);
     }
 
