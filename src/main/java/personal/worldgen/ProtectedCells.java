@@ -16,6 +16,10 @@ public final class ProtectedCells {
         this.protectedCells = Set.copyOf(new HashSet<>(cells));
     }
 
+    public ProtectedCells(int cellSize, MapProfile profile) {
+        this(cellSize, profile == null ? null : profile.cells());
+    }
+
     /** Inclusive footprint with padding. Unknown/oversized geometry fails closed. */
     public boolean allows(int x, int y, int width, int height, int padding) {
         if (width <= 0 || height <= 0 || padding < 0) return false;

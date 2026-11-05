@@ -1,5 +1,6 @@
 package personal.worldgen;
 
+import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -8,7 +9,7 @@ public final class WorldGenTest {
         return new SitePlanner(guard, 64, 64, 4, 64, 0, 0, 1024, 1024, seed);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         ProtectedCellsTest.main(args);
 
         try { new Site(0, 0, 0, 1); throw new AssertionError("Zero width accepted"); }
@@ -69,6 +70,24 @@ public final class WorldGenTest {
         catch (IllegalArgumentException expected) { }
         try { queue.add(null); throw new AssertionError("Null operation accepted"); }
         catch (IllegalArgumentException expected) { }
-        System.out.println("World-generation tests passed: site bounds, deterministic search, protected cells, reservations, budget queue and pause.");
+
+        var profile = new MapProfile("42.21.0", Set.of(
+                new ProtectedCells.Cell(1, 2), new ProtectedCells.Cell(-3, 4)));
+        assert profile.cellCount() == 2;
+        var profileFile = Files.createTempFile("wgen-profile", ".tsv");
+        MapProfileIO.write(profileFile, profile);
+        var loaded = MapProfileIO.read(profileFile);
+        assert loaded.equals(profile) : "Profile must survive a round-trip";
+        var imported = new ProtectedCells(256, loaded);
+        assert !imported.allows(256, 512, 1, 1, 0) : "Imported cell must protect its whole cell";
+        assert imported.allows(0, 0, 1, 1, 0) : "Unlisted cell stays free";
+        Files.writeString(profileFile, "version\t42.21.0\ncell\tx\ty\n");
+        try { MapProfileIO.read(profileFile); throw new AssertionError("Bad cell accepted"); }
+        catch (java.io.IOException expected) { }
+        try { new MapProfile("", Set.of()); throw new AssertionError("Empty version accepted"); }
+        catch (IllegalArgumentException expected) { }
+        try { new MapProfile("42.21.0", null); throw new AssertionError("Null cells accepted"); }
+        catch (IllegalArgumentException expected) { }
+        System.out.println("World-generation tests passed: site bounds, deterministic search, protected cells, reservations, budget queue, pause and map profiles.");
     }
 }
