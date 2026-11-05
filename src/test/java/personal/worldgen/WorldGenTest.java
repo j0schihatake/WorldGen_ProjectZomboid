@@ -173,6 +173,22 @@ public final class WorldGenTest {
         catch (IllegalArgumentException expected) { }
         try { RoadPlanner.connect(new Site(0, 0, 1, 1), new Site(100000, 0, 1, 1)); throw new AssertionError("Long road accepted"); }
         catch (IllegalArgumentException expected) { }
+        var houseSite = new Site(0, 0, 128, 128);
+        var house = BuildingPlanner.plan(houseSite, "0.1.0", 11, 3);
+        assert house.operations() > 0 : "Building must contain steps";
+        assert house.equals(BuildingPlanner.plan(houseSite, "0.1.0", 11, 3)) : "Same seed gives the same house";
+        int doors = 0;
+        for (var step : house.steps()) {
+            assert step.dx() >= 8 && step.dx() < 120 && step.dy() >= 8 && step.dy() < 120 : "Step inside the building area";
+            if (step.kind().equals("door")) doors++;
+        }
+        assert doors == 3 : "One entrance plus one door per extra room";
+        try { BuildingPlanner.plan(houseSite, "0.1.0", 1, 0); throw new AssertionError("Zero rooms accepted"); }
+        catch (IllegalArgumentException expected) { }
+        try { BuildingPlanner.plan(houseSite, "0.1.0", 1, BuildingPlanner.MAX_ROOMS + 1); throw new AssertionError("Too many rooms accepted"); }
+        catch (IllegalArgumentException expected) { }
+        try { BuildingPlanner.plan(new Site(0, 0, 32, 32), "0.1.0", 1, 1); throw new AssertionError("Tiny site accepted"); }
+        catch (IllegalArgumentException expected) { }
         System.out.println("World-generation tests passed: site bounds, deterministic search, protected cells, reservations, budget queue, pause, map profiles, time budget and plan commit.");
     }
 }
