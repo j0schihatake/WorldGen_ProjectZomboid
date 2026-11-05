@@ -161,6 +161,18 @@ public final class WorldGenTest {
         catch (IllegalArgumentException expected) { }
         try { CampPlanner.plan(null, "0.1.0", 42, 1); throw new AssertionError("Null site accepted"); }
         catch (IllegalArgumentException expected) { }
+        var road = RoadPlanner.connect(new Site(0, 0, 32, 32), new Site(96, 96, 32, 32));
+        assert road.get(0).equals(new RoadPlanner.Point(16, 16)) : "Road starts at the site centre";
+        assert road.get(road.size() - 1).equals(new RoadPlanner.Point(112, 112)) : "Road ends at the target centre";
+        assert road.size() == 193 : "L-shaped road has one point per tile";
+        var roadCells = new java.util.HashSet<RoadPlanner.Point>(road);
+        assert roadCells.size() == road.size() : "No duplicate road points";
+        var single = RoadPlanner.connect(new Site(0, 0, 32, 32), new Site(0, 0, 32, 32));
+        assert single.size() == 1 : "Same site needs one point";
+        try { RoadPlanner.connect(null, new Site(0, 0, 1, 1)); throw new AssertionError("Null site accepted"); }
+        catch (IllegalArgumentException expected) { }
+        try { RoadPlanner.connect(new Site(0, 0, 1, 1), new Site(100000, 0, 1, 1)); throw new AssertionError("Long road accepted"); }
+        catch (IllegalArgumentException expected) { }
         System.out.println("World-generation tests passed: site bounds, deterministic search, protected cells, reservations, budget queue, pause, map profiles, time budget and plan commit.");
     }
 }
