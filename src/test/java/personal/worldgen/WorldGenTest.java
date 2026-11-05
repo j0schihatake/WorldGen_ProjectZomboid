@@ -124,6 +124,26 @@ public final class WorldGenTest {
         catch (IllegalArgumentException expected) { }
         try { planned.addPlan(plan, null); throw new AssertionError("Null executor accepted"); }
         catch (IllegalArgumentException expected) { }
+        var sessionProfile = new MapProfile("42.21.0", Set.of(new ProtectedCells.Cell(0, 0)));
+        var sessionPlanner = new SitePlanner(new ProtectedCells(256, sessionProfile), 32, 32, 0, 64, 0, 0, 512, 512, 3);
+        var session = new WorldGenSession(sessionProfile, sessionPlanner, "0.1.0");
+        var plannedSite = session.plan(100);
+        assert plannedSite != null : "Session must plan a legal site";
+        assert session.status().plannedSites() == 1 && session.status().lastSite().equals(plannedSite);
+        var secondSite = session.plan(100);
+        assert secondSite != null && !secondSite.equals(plannedSite) : "Session must reserve planned sites";
+        var sessionPlan = new SitePlan(new Site(0, 0, 32, 32), "0.1.0", java.util.List.of(new PlanStep("camp", 0, 0)));
+        var sessionLog = new StringBuilder();
+        session.enqueue(sessionPlan, step -> sessionLog.append(step.kind()));
+        assert session.tick(10, System.nanoTime() + 1_000_000_000L) == 1;
+        assert sessionLog.toString().equals("camp");
+        session.pause();
+        assert session.status().paused() && session.tick(10, System.nanoTime() + 1_000_000_000L) == 0;
+        session.resume();
+        try { new WorldGenSession(null, sessionPlanner, "v"); throw new AssertionError("Null profile accepted"); }
+        catch (IllegalArgumentException expected) { }
+        try { new WorldGenSession(sessionProfile, sessionPlanner, ""); throw new AssertionError("Empty version accepted"); }
+        catch (IllegalArgumentException expected) { }
         System.out.println("World-generation tests passed: site bounds, deterministic search, protected cells, reservations, budget queue, pause, map profiles, time budget and plan commit.");
     }
 }
