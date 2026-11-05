@@ -140,6 +140,15 @@ public final class WorldGenTest {
         var invalidPlan = new SitePlan(new Site(0, 0, 32, 32), "0.1.0", java.util.List.of(new PlanStep("bad", 500, 500)));
         try { session.enqueue(invalidPlan, step -> { }); throw new AssertionError("Invalid plan enqueued"); }
         catch (IllegalArgumentException expected) { }
+        var stats = session.stats();
+        assert stats.completed() > 0 && stats.pending() == 0 : "Session stats";
+        var settlementSession = new WorldGenSession(sessionProfile,
+                new SitePlanner(new ProtectedCells(256, sessionProfile), 32, 32, 0, 64, 0, 0, 512, 512, 3),
+                "0.1.0");
+        var queued = settlementSession.planSettlement(new Site(0, 0, 64, 64),
+                new Site(80, 0, 64, 64), new Site(180, 100, 32, 32), 7, step -> { });
+        assert settlementSession.stats().pending() > 0;
+        assert queued.camp().operations() > 0;
         session.pause();
         assert session.status().paused() && session.tick(10, System.nanoTime() + 1_000_000_000L) == 0;
         session.resume();
@@ -226,6 +235,13 @@ public final class WorldGenTest {
                 new Site(100, 100, 32, 32), "0.1.0", 1); throw new AssertionError("Overlap accepted"); }
         catch (IllegalArgumentException expected) { }
         try { SettlementPlanner.plan(null, new Site(0, 0, 64, 64), new Site(1, 1, 1, 1), "0.1.0", 1); throw new AssertionError("Null site accepted"); }
+        catch (IllegalArgumentException expected) { }
+        var freeGuard = new ProtectedCells(256, java.util.Set.of());
+        SettlementPlanner.planValidated(new Site(0, 0, 64, 64), new Site(80, 0, 64, 64),
+                new Site(180, 100, 32, 32), "0.1.0", 7, freeGuard, 0);
+        var settlementBlockedGuard = new ProtectedCells(16, java.util.Set.of(new ProtectedCells.Cell(1, 1)));
+        try { SettlementPlanner.planValidated(new Site(0, 0, 64, 64), new Site(80, 0, 64, 64),
+                new Site(180, 100, 32, 32), "0.1.0", 7, settlementBlockedGuard, 0); throw new AssertionError("Protected settlement accepted"); }
         catch (IllegalArgumentException expected) { }
         System.out.println("World-generation tests passed: site bounds, deterministic search, protected cells, reservations, budget queue, pause, map profiles, time budget and plan commit.");
     }

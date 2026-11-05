@@ -36,8 +36,23 @@ public final class WorldGenSession {
         return site;
     }
 
+    public record Stats(int pending, long completed, boolean paused) {}
+
+    public Stats stats() {
+        return new Stats(queue.pendingOps(), queue.completedOps(), queue.isPaused());
+    }
+
     public java.util.List<PlanValidator.Issue> validate(SitePlan plan) {
         return PlanValidator.validate(plan, guard, 0);
+    }
+
+    public SettlementPlanner.Settlement planSettlement(Site campSite, Site buildingSite, Site roadTarget,
+                                                       long seed, Consumer<PlanStep> executor) {
+        var settlement = SettlementPlanner.planValidated(campSite, buildingSite, roadTarget,
+                generatorVersion, seed, guard, 0);
+        enqueue(settlement.camp(), executor);
+        enqueue(settlement.building().asSitePlan(generatorVersion), executor);
+        return settlement;
     }
 
     public void enqueue(SitePlan plan, Consumer<PlanStep> executor) {

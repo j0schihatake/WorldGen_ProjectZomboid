@@ -1,5 +1,6 @@
 package personal.worldgen;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /** Composes a camp, a building and a road into one deterministic settlement plan. */
@@ -24,6 +25,18 @@ public final class SettlementPlanner {
         var building = BuildingPlanner.planBuilding(buildingSite, version, seed + 1, 3);
         var road = RoadPlanner.connect(buildingSite, roadTarget);
         return new Settlement(camp, building, road);
+    }
+
+    /** Same plan, but refuses protected cells before enqueueing anything. */
+    public static Settlement planValidated(Site campSite, Site buildingSite, Site roadTarget,
+                                           String version, long seed,
+                                           ProtectedCells guard, int padding) {
+        if (guard == null) throw new IllegalArgumentException("Missing guard");
+        var settlement = plan(campSite, buildingSite, roadTarget, version, seed);
+        var issues = new ArrayList<>(PlanValidator.validate(settlement.camp(), guard, padding));
+        issues.addAll(PlanValidator.validate(settlement.building().asSitePlan(version), guard, padding));
+        if (!issues.isEmpty()) throw new IllegalArgumentException("Protected settlement: " + issues);
+        return settlement;
     }
 
     public static boolean overlaps(Site a, Site b) {

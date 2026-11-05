@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 public final class GenerationQueue {
     private final Deque<Runnable> queue = new ArrayDeque<>();
     private boolean paused;
+    private long completedOps;
 
     public void add(Runnable operation) {
         if (operation == null) throw new IllegalArgumentException("Missing operation");
@@ -21,6 +22,8 @@ public final class GenerationQueue {
         while (executed < budget && !queue.isEmpty()) {
             queue.poll().run();
             executed++;
+            completedOps++;
+            completedOps++;
         }
         return executed;
     }
@@ -33,6 +36,8 @@ public final class GenerationQueue {
         while (executed < budget && !queue.isEmpty() && System.nanoTime() < deadlineNanos) {
             queue.poll().run();
             executed++;
+            completedOps++;
+            completedOps++;
         }
         return executed;
     }
@@ -48,5 +53,6 @@ public final class GenerationQueue {
     public boolean isPaused() { return paused; }
     public int size() { return queue.size(); }
     public int pendingOps() { return queue.size(); }
+    public long completedOps() { return completedOps; }
     public void clear() { queue.clear(); }
 }
