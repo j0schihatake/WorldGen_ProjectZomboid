@@ -149,6 +149,16 @@ public final class WorldGenTest {
                 new Site(80, 0, 64, 64), new Site(180, 100, 32, 32), 7, step -> { });
         assert settlementSession.stats().pending() > 0;
         assert queued.camp().operations() > 0;
+        var districtGuard = new ProtectedCells(256, java.util.Set.of());
+        var district = SettlementPlanner.planDistrict(
+                java.util.List.of(new Site(0, 0, 64, 64), new Site(300, 0, 64, 64)),
+                java.util.List.of(new Site(80, 0, 64, 64), new Site(380, 0, 64, 64)),
+                new Site(500, 100, 32, 32), "0.1.0", 11, districtGuard, 0);
+        assert district.settlements().size() == 2;
+        try { SettlementPlanner.planDistrict(
+                java.util.List.of(new Site(0, 0, 64, 64)), java.util.List.of(new Site(10, 0, 64, 64)),
+                new Site(200, 100, 32, 32), "0.1.0", 7, districtGuard, 0); throw new AssertionError("Overlap accepted"); }
+        catch (IllegalArgumentException expected) { }
         session.pause();
         assert session.status().paused() && session.tick(10, System.nanoTime() + 1_000_000_000L) == 0;
         session.resume();

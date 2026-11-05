@@ -39,6 +39,35 @@ public final class SettlementPlanner {
         return settlement;
     }
 
+    public record District(List<Settlement> settlements) {
+        public District {
+            if (settlements == null || settlements.isEmpty()) throw new IllegalArgumentException("Empty district");
+            settlements = List.copyOf(settlements);
+        }
+    }
+
+    /** Several camps/buildings around one road target; every footprint must be free. */
+    public static District planDistrict(List<Site> campSites, List<Site> buildingSites, Site roadTarget,
+                                        String version, long seed, ProtectedCells guard, int padding) {
+        if (campSites == null || buildingSites == null || roadTarget == null || guard == null)
+            throw new IllegalArgumentException("Missing district data");
+        if (campSites.isEmpty() || campSites.size() != buildingSites.size())
+            throw new IllegalArgumentException("District needs matching camps and buildings");
+        var all = new ArrayList<Site>(campSites);
+        all.addAll(buildingSites);
+        for (int i = 0; i < all.size(); i++) {
+            for (int j = i + 1; j < all.size(); j++) {
+                if (overlaps(all.get(i), all.get(j))) throw new IllegalArgumentException("District sites overlap");
+            }
+        }
+        var settlements = new ArrayList<Settlement>();
+        for (int i = 0; i < campSites.size(); i++) {
+            settlements.add(planValidated(campSites.get(i), buildingSites.get(i), roadTarget,
+                    version, seed + i * 17L, guard, padding));
+        }
+        return new District(settlements);
+    }
+
     public static boolean overlaps(Site a, Site b) {
         return a.x() < b.x() + b.width() && b.x() < a.x() + a.width()
                 && a.y() < b.y() + b.height() && b.y() < a.y() + a.height();
