@@ -69,6 +69,11 @@ public final class WorldGenTest {
         assert queue.completedOps() == 3 : "Completed operations counted once";
         try { queue.run(-1); throw new AssertionError("Negative budget accepted"); }
         catch (IllegalArgumentException expected) { }
+        var failing = new GenerationQueue();
+        failing.add(() -> { throw new IllegalStateException("boom"); });
+        failing.add(() -> log.append("ok"));
+        assert failing.run(5) == 2 && failing.failedOps() == 1 && failing.completedOps() == 1;
+        assert failing.lastFailure() instanceof IllegalStateException;
         try { queue.add(null); throw new AssertionError("Null operation accepted"); }
         catch (IllegalArgumentException expected) { }
 

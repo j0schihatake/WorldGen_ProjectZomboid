@@ -9,6 +9,8 @@ public final class GenerationQueue {
     private final Deque<Runnable> queue = new ArrayDeque<>();
     private boolean paused;
     private long completedOps;
+    private long failedOps;
+    private RuntimeException lastFailure;
 
     public void add(Runnable operation) {
         if (operation == null) throw new IllegalArgumentException("Missing operation");
@@ -20,9 +22,8 @@ public final class GenerationQueue {
         if (paused) return 0;
         int executed = 0;
         while (executed < budget && !queue.isEmpty()) {
-            queue.poll().run();
+            execute(queue.poll());
             executed++;
-            completedOps++;
         }
         return executed;
     }
@@ -33,9 +34,8 @@ public final class GenerationQueue {
         if (paused) return 0;
         int executed = 0;
         while (executed < budget && !queue.isEmpty() && System.nanoTime() < deadlineNanos) {
-            queue.poll().run();
+            execute(queue.poll());
             executed++;
-            completedOps++;
         }
         return executed;
     }
@@ -46,11 +46,23 @@ public final class GenerationQueue {
         for (var step : plan.steps()) add(() -> executor.accept(step));
     }
 
+    private void execute(Runnable operation) {
+        try {
+            operation.run();
+            completedOps++;
+        } catch (RuntimeException failure) {
+            failedOps++;
+            lastFailure = failure;
+        }
+    }
+
     public void pause() { paused = true; }
     public void resume() { paused = false; }
     public boolean isPaused() { return paused; }
     public int size() { return queue.size(); }
     public int pendingOps() { return queue.size(); }
     public long completedOps() { return completedOps; }
+    public long failedOps() { return failedOps; }
+    public RuntimeException lastFailure() { return lastFailure; }
     public void clear() { queue.clear(); }
 }
