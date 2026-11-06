@@ -125,6 +125,7 @@ public final class WorldGenTest {
             if (step.kind().equals("wall")) throw new IllegalStateException("wall");
         });
         assert run.issues().isEmpty() && run.report().completed() == 1 && run.report().failed() == 1;
+        assert run.failures().size() == 1 && run.failures().get(0).kind().equals("wall");
         assert applied.get(0).equals("floor@10,20") && applied.get(1).equals("wall@11,21");
         var blockedRun = PlanRunner.run(runnerPlan, new ProtectedCells(256, Set.of(new ProtectedCells.Cell(0, 0))), 0,
                 (step, x, y) -> { throw new AssertionError("Blocked plan must not execute"); });
