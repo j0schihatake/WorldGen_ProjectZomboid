@@ -66,6 +66,7 @@ public final class WorldGenTest {
         queue.resume();
         assert queue.run(5) == 1 && queue.size() == 0;
         assert log.toString().equals("012");
+        assert queue.completedOps() == 3 : "Completed operations counted once";
         try { queue.run(-1); throw new AssertionError("Negative budget accepted"); }
         catch (IllegalArgumentException expected) { }
         try { queue.add(null); throw new AssertionError("Null operation accepted"); }

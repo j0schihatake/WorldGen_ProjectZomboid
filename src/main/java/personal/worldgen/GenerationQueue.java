@@ -23,7 +23,6 @@ public final class GenerationQueue {
             queue.poll().run();
             executed++;
             completedOps++;
-            completedOps++;
         }
         return executed;
     }
@@ -36,7 +35,6 @@ public final class GenerationQueue {
         while (executed < budget && !queue.isEmpty() && System.nanoTime() < deadlineNanos) {
             queue.poll().run();
             executed++;
-            completedOps++;
             completedOps++;
         }
         return executed;
