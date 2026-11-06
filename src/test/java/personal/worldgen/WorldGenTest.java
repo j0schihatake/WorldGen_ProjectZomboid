@@ -74,6 +74,9 @@ public final class WorldGenTest {
         failing.add(() -> log.append("ok"));
         assert failing.run(5) == 2 && failing.failedOps() == 1 && failing.completedOps() == 1;
         assert failing.lastFailure() instanceof IllegalStateException;
+        var report = failing.report(2);
+        assert report.total() == 2 && report.completed() == 1 && report.failed() == 1 && report.pending() == 0;
+        assert !report.success() && report.summary().contains("failed=1");
         try { queue.add(null); throw new AssertionError("Null operation accepted"); }
         catch (IllegalArgumentException expected) { }
 

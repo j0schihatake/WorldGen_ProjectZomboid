@@ -63,6 +63,8 @@ public final class GenerationQueue {
     public int pendingOps() { return queue.size(); }
     public long completedOps() { return completedOps; }
     public long failedOps() { return failedOps; }
+    public GenerationReport report(int total) { return new GenerationReport(total, completedOps, failedOps, queue.size()); }
+
     public RuntimeException lastFailure() { return lastFailure; }
     public void clear() { queue.clear(); }
 }
