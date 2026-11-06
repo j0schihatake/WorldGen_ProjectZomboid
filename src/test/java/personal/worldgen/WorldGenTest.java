@@ -117,6 +117,19 @@ public final class WorldGenTest {
         try { new SitePlan(new Site(0, 0, 1, 1), "", java.util.List.of(stepA)); throw new AssertionError("Empty version accepted"); }
         catch (IllegalArgumentException expected) { }
 
+        var runnerPlan = new SitePlan(new Site(10, 20, 8, 8), "42.21.0",
+                java.util.List.of(new PlanStep("floor", 0, 0), new PlanStep("wall", 1, 1)));
+        var applied = new java.util.ArrayList<String>();
+        var run = PlanRunner.run(runnerPlan, free, 0, (step, x, y) -> {
+            applied.add(step.kind() + "@" + x + "," + y);
+            if (step.kind().equals("wall")) throw new IllegalStateException("wall");
+        });
+        assert run.issues().isEmpty() && run.report().completed() == 1 && run.report().failed() == 1;
+        assert applied.get(0).equals("floor@10,20") && applied.get(1).equals("wall@11,21");
+        var blockedRun = PlanRunner.run(runnerPlan, new ProtectedCells(256, Set.of(new ProtectedCells.Cell(0, 0))), 0,
+                (step, x, y) -> { throw new AssertionError("Blocked plan must not execute"); });
+        assert !blockedRun.issues().isEmpty() && blockedRun.report().completed() == 0;
+
         var planned = new GenerationQueue();
         var order = new StringBuilder();
         planned.addPlan(plan, step -> order.append(step.kind()));
