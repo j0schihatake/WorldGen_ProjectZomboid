@@ -12,3 +12,9 @@
 - Штатный `tools/launch_dev.sh --menu-only --profile worldgen ...` поднял игру.
 - Лог: `[PersonalWorldGen] Java core 0.1.0 loaded; core=0.1.0 worldWrites=0 mode=planning`.
 - JAR одобрен, мод загружен в ZombieBuddy; игра выключена.
+
+## 0.3.0 — профиль карт в игре
+
+- В JAR включён `personal/worldgen/profile.tsv`.
+- В игре: `core=0.3.0 profileCells=130 profileVersion=42.21.0 worldWrites=0`.
+- Игра выключена.
