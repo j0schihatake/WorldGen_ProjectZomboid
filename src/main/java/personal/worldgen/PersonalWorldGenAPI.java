@@ -3,7 +3,7 @@ package personal.worldgen;
 /** Read-only game-facing entry point. Plans data; never writes to the world yet. */
 @me.zed_0xff.zombie_buddy.Exposer.LuaClass
 public final class PersonalWorldGenAPI {
-    public static final String VERSION = "0.6.0";
+    public static final String VERSION = "0.7.0";
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
 
     private PersonalWorldGenAPI() {}
@@ -119,6 +119,29 @@ public final class PersonalWorldGenAPI {
             return "buildingOps=" + plan.steps().size() + " placed=" + placed + " worldWrites=" + placed;
         } catch (Throwable error) {
             return "building-error=" + error.getClass().getSimpleName() + " worldWrites=0";
+        }
+    }
+
+    /** One bounded test-site pipeline: camp, road and building markers. */
+    public String generateTestSite(Object player) {
+        String camp = placeCamp(player);
+        String road = placeRoad(player);
+        String building = placeBuilding(player);
+        int campCount = countPlaced(camp);
+        int roadCount = countPlaced(road);
+        int buildingCount = countPlaced(building);
+        return "camp=" + campCount + " road=" + roadCount + " building=" + buildingCount
+                + " worldWrites=" + (campCount + roadCount + buildingCount);
+    }
+
+    private static int countPlaced(String value) {
+        int at = value == null ? -1 : value.indexOf("placed=");
+        if (at < 0) return 0;
+        int end = value.indexOf(' ', at);
+        try {
+            return Integer.parseInt(value.substring(at + 7, end < 0 ? value.length() : end));
+        } catch (NumberFormatException error) {
+            return 0;
         }
     }
 
