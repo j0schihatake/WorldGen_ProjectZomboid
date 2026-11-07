@@ -13,4 +13,8 @@ Events.OnGameStart.Add(function()
     end
     print("[PersonalWorldGen] " .. tostring(service:status()))
     print("[PersonalWorldGen] demo " .. tostring(service:planDemo(42)))
+    local player = getSpecificPlayer(0)
+    if player then
+        print("[PersonalWorldGen] near " .. tostring(service:planNearPlayer(player, 42)))
+    end
 end)
