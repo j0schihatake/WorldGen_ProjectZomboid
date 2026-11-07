@@ -1,9 +1,12 @@
 package personal.worldgen;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 /** Read-only game-facing entry point. Plans data; never writes to the world yet. */
 @me.zed_0xff.zombie_buddy.Exposer.LuaClass
 public final class PersonalWorldGenAPI {
-    public static final String VERSION = "0.8.0";
+    public static final String VERSION = "0.9.0";
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
 
     private PersonalWorldGenAPI() {}
@@ -122,6 +125,52 @@ public final class PersonalWorldGenAPI {
         }
     }
 
+    /** Plans in a background thread; never touches game objects there. */
+    public String startBackgroundPlan(Object player) {
+        if (player == null) return "no-player";
+        try {
+            int x = ((Number) player.getClass().getMethod("getXi").invoke(player)).intValue() + 32;
+            int y = ((Number) player.getClass().getMethod("getYi").invoke(player)).intValue() + 32;
+            planState = "planning";
+            planResult = null;
+            planner.submit(() -> {
+                try {
+                    planResult = CampPlanner.plan(new Site(x, y, 32, 32), VERSION, 42, 8);
+                    planState = "ready";
+                } catch (Throwable error) {
+                    planState = "error=" + error.getClass().getSimpleName();
+                }
+            });
+            return "started";
+        } catch (Throwable error) { return "start-error=" + error.getClass().getSimpleName(); }
+    }
+
+    public String backgroundPlanStatus() { return planState; }
+
+    /** Main thread only: commits the finished background plan. */
+    public String commitBackgroundPlan(Object player) {
+        SitePlan plan = planResult;
+        if (plan == null) return "not-ready";
+        if (player == null) return "no-player";
+        try {
+            Object cell = player.getClass().getMethod("getCell").invoke(player);
+            int placed = 0;
+            for (var step : plan.steps()) {
+                try {
+                    Object target = cell.getClass().getMethod("getGridSquare", int.class, int.class, int.class)
+                            .invoke(cell, plan.site().x() + step.dx(), plan.site().y() + step.dy(), 0);
+                    if (target == null) continue;
+                    target.getClass().getMethod("AddWorldInventoryItem", String.class, float.class, float.class, float.class)
+                            .invoke(target, "Base.Hammer", 0.5f, 0.5f, 0f);
+                    placed++;
+                } catch (Throwable ignored) { }
+            }
+            planResult = null;
+            planState = "idle";
+            return "commit placed=" + placed + " worldWrites=" + placed;
+        } catch (Throwable error) { return "commit-error=" + error.getClass().getSimpleName(); }
+    }
+
     /** One bounded test-site pipeline: camp, road and building markers. */
     public String generateTestSite(Object player) {
         String camp = placeCamp(player);
@@ -170,6 +219,14 @@ public final class PersonalWorldGenAPI {
             return "wall-error=" + error.getClass().getSimpleName() + " worldWrites=0";
         }
     }
+
+    private final ExecutorService planner = Executors.newSingleThreadExecutor(r -> {
+        Thread thread = new Thread(r, "PersonalWorldGen-planner");
+        thread.setDaemon(true);
+        return thread;
+    });
+    private volatile String planState = "idle";
+    private volatile SitePlan planResult;
 
     private MapProfile profile() throws java.io.IOException {
         try (var input = PersonalWorldGenAPI.class.getResourceAsStream("/personal/worldgen/profile.tsv")) {
