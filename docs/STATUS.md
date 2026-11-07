@@ -6,3 +6,9 @@
 - `PersonalWorldGenAPI.status()` и `planDemo(42)` только планируют данные.
 - `worldWrites=0`: мир пока не изменяется.
 - `tools/check.py` — все тесты; `tools/build_mod.py` — JAR.
+
+## 0.1.0 — проверка в игре
+
+- Штатный `tools/launch_dev.sh --menu-only --profile worldgen ...` поднял игру.
+- Лог: `[PersonalWorldGen] Java core 0.1.0 loaded; core=0.1.0 worldWrites=0 mode=planning`.
+- JAR одобрен, мод загружен в ZombieBuddy; игра выключена.
