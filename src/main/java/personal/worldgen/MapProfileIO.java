@@ -1,6 +1,7 @@
 package personal.worldgen;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,6 +36,18 @@ public final class MapProfileIO {
         }
         if (version == null) throw new IOException("Missing version line");
         return new MapProfile(version, cells);
+    }
+
+    public static MapProfile read(InputStream input) throws IOException {
+        if (input == null) throw new IllegalArgumentException("Missing profile stream");
+        String text = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+        var temp = Files.createTempFile("worldgen-profile-", ".tsv");
+        try {
+            Files.writeString(temp, text, StandardCharsets.UTF_8);
+            return read(temp);
+        } finally {
+            Files.deleteIfExists(temp);
+        }
     }
 
     public static void write(Path path, MapProfile profile) throws IOException {

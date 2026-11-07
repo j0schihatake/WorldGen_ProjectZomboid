@@ -15,6 +15,9 @@ def main() -> None:
     CLASSES.mkdir(parents=True)
     sources = sorted((ROOT / "src" / "main" / "java").rglob("*.java"))
     subprocess.run(["javac", "--release", "17", "-encoding", "UTF-8", "-d", str(CLASSES), *map(str, sources)], check=True)
+    resources = ROOT / "src" / "main" / "resources"
+    if resources.is_dir():
+        shutil.copytree(resources, CLASSES, dirs_exist_ok=True)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(["jar", "--create", "--file", str(OUT), "--date=2020-01-01T00:00:00Z", "-C", str(CLASSES), "."], check=True)
     print(f"Built: {OUT}")

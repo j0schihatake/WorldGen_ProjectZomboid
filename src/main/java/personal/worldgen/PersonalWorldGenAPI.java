@@ -2,7 +2,7 @@ package personal.worldgen;
 
 /** Read-only game-facing entry point. Plans data; never writes to the world yet. */
 public final class PersonalWorldGenAPI {
-    public static final String VERSION = "0.2.0";
+    public static final String VERSION = "0.3.0";
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
 
     private PersonalWorldGenAPI() {}
@@ -10,7 +10,13 @@ public final class PersonalWorldGenAPI {
     public static PersonalWorldGenAPI getInstance() { return INSTANCE; }
 
     public String status() {
-        return "core=" + VERSION + " worldWrites=0 mode=planning";
+        try (var input = PersonalWorldGenAPI.class.getResourceAsStream("/personal/worldgen/profile.tsv")) {
+            var profile = MapProfileIO.read(input);
+            return "core=" + VERSION + " profileCells=" + profile.cells().size()
+                    + " profileVersion=" + profile.gameVersion() + " worldWrites=0 mode=planning";
+        } catch (Exception error) {
+            return "core=" + VERSION + " profile=missing worldWrites=0 mode=planning";
+        }
     }
 
     /** Plans a camp near the player using only the position; no world writes. */
