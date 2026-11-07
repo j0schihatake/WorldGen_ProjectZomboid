@@ -3,7 +3,7 @@ package personal.worldgen;
 /** Read-only game-facing entry point. Plans data; never writes to the world yet. */
 @me.zed_0xff.zombie_buddy.Exposer.LuaClass
 public final class PersonalWorldGenAPI {
-    public static final String VERSION = "0.4.0";
+    public static final String VERSION = "0.5.0";
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
 
     private PersonalWorldGenAPI() {}
@@ -33,6 +33,38 @@ public final class PersonalWorldGenAPI {
             return item != null ? "marker=placed worldWrites=1" : "marker=failed worldWrites=0";
         } catch (Throwable error) {
             return "marker-error=" + error.getClass().getSimpleName() + " worldWrites=0";
+        }
+    }
+
+    /** Places a bounded camp plan into the test world as item markers. */
+    public String placeCamp(Object player) {
+        if (player == null) return "no-player";
+        try {
+            Object square = player.getClass().getMethod("getCurrentSquare").invoke(player);
+            if (square == null) return "no-square";
+            var plan = CampPlanner.plan(new Site(0, 0, 32, 32), VERSION, 42, 8);
+            Object cell = player.getClass().getMethod("getCell").invoke(player);
+            int placed = 0;
+            for (var step : plan.steps()) {
+                String item = switch (step.kind()) {
+                    case "tent" -> "Base.CampingTentKit2";
+                    default -> "Base.Hammer";
+                };
+                try {
+                    Object target = cell.getClass().getMethod("getGridSquare", int.class, int.class, int.class)
+                            .invoke(cell,
+                                    ((Number) player.getClass().getMethod("getXi").invoke(player)).intValue() + step.dx(),
+                                    ((Number) player.getClass().getMethod("getYi").invoke(player)).intValue() + step.dy(),
+                                    ((Number) player.getClass().getMethod("getZi").invoke(player)).intValue());
+                    if (target == null) continue;
+                    target.getClass().getMethod("AddWorldInventoryItem", String.class, float.class, float.class, float.class)
+                            .invoke(target, item, 0.5f, 0.5f, 0f);
+                    placed++;
+                } catch (Throwable ignored) { }
+            }
+            return "campOps=" + plan.steps().size() + " placed=" + placed + " worldWrites=" + placed;
+        } catch (Throwable error) {
+            return "camp-error=" + error.getClass().getSimpleName() + " worldWrites=0";
         }
     }
 
