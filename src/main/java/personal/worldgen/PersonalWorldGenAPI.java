@@ -3,7 +3,7 @@ package personal.worldgen;
 /** Read-only game-facing entry point. Plans data; never writes to the world yet. */
 @me.zed_0xff.zombie_buddy.Exposer.LuaClass
 public final class PersonalWorldGenAPI {
-    public static final String VERSION = "0.5.0";
+    public static final String VERSION = "0.6.0";
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
 
     private PersonalWorldGenAPI() {}
@@ -65,6 +65,60 @@ public final class PersonalWorldGenAPI {
             return "campOps=" + plan.steps().size() + " placed=" + placed + " worldWrites=" + placed;
         } catch (Throwable error) {
             return "camp-error=" + error.getClass().getSimpleName() + " worldWrites=0";
+        }
+    }
+
+    /** Places a bounded road marker set into the test world. */
+    public String placeRoad(Object player) {
+        if (player == null) return "no-player";
+        try {
+            var points = RoadPlanner.connect(new Site(0, 0, 32, 32), new Site(64, 0, 32, 32));
+            Object cell = player.getClass().getMethod("getCell").invoke(player);
+            int bx = ((Number) player.getClass().getMethod("getXi").invoke(player)).intValue();
+            int by = ((Number) player.getClass().getMethod("getYi").invoke(player)).intValue();
+            int bz = ((Number) player.getClass().getMethod("getZi").invoke(player)).intValue();
+            int placed = 0;
+            for (int i = 0; i < points.size(); i += 4) {
+                var point = points.get(i);
+                try {
+                    Object target = cell.getClass().getMethod("getGridSquare", int.class, int.class, int.class)
+                            .invoke(cell, bx + point.x(), by + point.y(), bz);
+                    if (target == null) continue;
+                    target.getClass().getMethod("AddWorldInventoryItem", String.class, float.class, float.class, float.class)
+                            .invoke(target, "Base.Hammer", 0.5f, 0.5f, 0f);
+                    placed++;
+                } catch (Throwable ignored) { }
+            }
+            return "roadPoints=" + points.size() + " placed=" + placed + " worldWrites=" + placed;
+        } catch (Throwable error) {
+            return "road-error=" + error.getClass().getSimpleName() + " worldWrites=0";
+        }
+    }
+
+    /** Places a bounded building marker set into the test world. */
+    public String placeBuilding(Object player) {
+        if (player == null) return "no-player";
+        try {
+            var plan = BuildingPlanner.plan(new Site(0, 0, 48, 40), VERSION, 42, 3);
+            Object cell = player.getClass().getMethod("getCell").invoke(player);
+            int bx = ((Number) player.getClass().getMethod("getXi").invoke(player)).intValue();
+            int by = ((Number) player.getClass().getMethod("getYi").invoke(player)).intValue();
+            int bz = ((Number) player.getClass().getMethod("getZi").invoke(player)).intValue();
+            int placed = 0;
+            for (var step : plan.steps()) {
+                if (placed >= 24) break;
+                try {
+                    Object target = cell.getClass().getMethod("getGridSquare", int.class, int.class, int.class)
+                            .invoke(cell, bx + step.dx(), by + step.dy(), bz);
+                    if (target == null) continue;
+                    target.getClass().getMethod("AddWorldInventoryItem", String.class, float.class, float.class, float.class)
+                            .invoke(target, "Base.Hammer", 0.5f, 0.5f, 0f);
+                    placed++;
+                } catch (Throwable ignored) { }
+            }
+            return "buildingOps=" + plan.steps().size() + " placed=" + placed + " worldWrites=" + placed;
+        } catch (Throwable error) {
+            return "building-error=" + error.getClass().getSimpleName() + " worldWrites=0";
         }
     }
 
