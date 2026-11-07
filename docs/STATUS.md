@@ -18,3 +18,11 @@
 - В JAR включён `personal/worldgen/profile.tsv`.
 - В игре: `core=0.3.0 profileCells=130 profileVersion=42.21.0 worldWrites=0`.
 - Игра выключена.
+
+## 0.4.0 — первая запись объекта
+
+- `@Exposer.LuaClass` на `PersonalWorldGenAPI`: ZombieBuddy теперь отдаёт API в Lua.
+- `placeMarker` пишет один предмет `Base.Hammer` на клетку игрока.
+- Проверка: `marker=placed worldWrites=1`.
+- В обычном запуске автоматической записи нет; только явный вызов API.
+- Мир сценария тестовый; штатный мир не изменялся.
