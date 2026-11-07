@@ -2,7 +2,7 @@ package personal.worldgen;
 
 /** Read-only game-facing entry point. Plans data; never writes to the world yet. */
 public final class PersonalWorldGenAPI {
-    public static final String VERSION = "0.3.0";
+    public static final String VERSION = "0.3.1";
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
 
     private PersonalWorldGenAPI() {}
@@ -20,6 +20,12 @@ public final class PersonalWorldGenAPI {
     }
 
     /** Plans a camp near the player using only the position; no world writes. */
+    private MapProfile profile() throws java.io.IOException {
+        try (var input = PersonalWorldGenAPI.class.getResourceAsStream("/personal/worldgen/profile.tsv")) {
+            return MapProfileIO.read(input);
+        }
+    }
+
     public String planNearPlayer(Object player, long seed) {
         if (player == null) return "no-player";
         try {
@@ -27,9 +33,13 @@ public final class PersonalWorldGenAPI {
             double py = (double) player.getClass().getMethod("getY").invoke(player);
             int x = (int) px + 10;
             int y = (int) py + 10;
+            var guard = new ProtectedCells(256, profile());
+            if (!guard.allows(x, y, 16, 16, 0)) {
+                return "x=" + x + " y=" + y + " protected=true worldWrites=0";
+            }
             var plan = CampPlanner.plan(new Site(x, y, 16, 16), VERSION, seed, 8);
-            return "x=" + x + " y=" + y + " campOps=" + plan.operations() + " worldWrites=0";
-        } catch (ReflectiveOperationException error) {
+            return "x=" + x + " y=" + y + " campOps=" + plan.operations() + " protected=false worldWrites=0";
+        } catch (ReflectiveOperationException | java.io.IOException error) {
             return "player-probe-failed=" + error.getClass().getSimpleName();
         }
     }
