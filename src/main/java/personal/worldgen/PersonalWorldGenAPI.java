@@ -3,7 +3,7 @@ package personal.worldgen;
 /** Read-only game-facing entry point. Plans data; never writes to the world yet. */
 @me.zed_0xff.zombie_buddy.Exposer.LuaClass
 public final class PersonalWorldGenAPI {
-    public static final String VERSION = "0.7.0";
+    public static final String VERSION = "0.8.0";
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
 
     private PersonalWorldGenAPI() {}
@@ -142,6 +142,32 @@ public final class PersonalWorldGenAPI {
             return Integer.parseInt(value.substring(at + 7, end < 0 ? value.length() : end));
         } catch (NumberFormatException error) {
             return 0;
+        }
+    }
+
+    /** Places a short line of real wall objects in the test world. */
+    public String placeRealWall(Object player) {
+        if (player == null) return "no-player";
+        try {
+            Object cell = player.getClass().getMethod("getCell").invoke(player);
+            Class<?> squareClass = Class.forName("zombie.iso.IsoGridSquare");
+            Class<?> objectClass = Class.forName("zombie.iso.IsoObject");
+            int bx = ((Number) player.getClass().getMethod("getXi").invoke(player)).intValue();
+            int by = ((Number) player.getClass().getMethod("getYi").invoke(player)).intValue();
+            int bz = ((Number) player.getClass().getMethod("getZi").invoke(player)).intValue();
+            int placed = 0;
+            for (int i = 0; i < 4; i++) {
+                Object target = cell.getClass().getMethod("getGridSquare", int.class, int.class, int.class)
+                        .invoke(cell, bx + 3 + i, by + 3, bz);
+                if (target == null) continue;
+                Object object = objectClass.getConstructor(squareClass, String.class)
+                        .newInstance(target, "walls_exterior_house_01_0");
+                object.getClass().getMethod("addToWorld").invoke(object);
+                placed++;
+            }
+            return "realWalls=" + placed + " worldWrites=" + placed;
+        } catch (Throwable error) {
+            return "wall-error=" + error.getClass().getSimpleName() + " worldWrites=0";
         }
     }
 
