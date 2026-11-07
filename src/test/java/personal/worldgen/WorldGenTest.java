@@ -74,6 +74,10 @@ public final class WorldGenTest {
         failing.add(() -> log.append("ok"));
         assert failing.run(5) == 2 && failing.failedOps() == 1 && failing.completedOps() == 1;
         assert failing.lastFailure() instanceof IllegalStateException;
+        var pipelinePlan = new SitePlan(new Site(0, 0, 8, 8), "42.21.0", java.util.List.of(new PlanStep("floor", 0, 0)));
+        var pipeline = WorldGenPipeline.run(free, planner(free, 42), 100, 0,
+                site -> pipelinePlan, (step, x, y) -> { });
+        assert pipeline.result().report().success() && pipeline.site().width() == 64;
         var report = failing.report(2);
         assert report.total() == 2 && report.completed() == 1 && report.failed() == 1 && report.pending() == 0;
         assert !report.success() && report.summary().contains("failed=1");
