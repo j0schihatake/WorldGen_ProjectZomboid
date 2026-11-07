@@ -36,3 +36,9 @@ python3 tools/export_profile.py
 клетки из `*.lotheader` и пишет `profile.tsv` с версией игры. Файл
 `profile.tsv` — локальный (в `.gitignore`); `MapProfileIO` загружает его в Java,
 `ProtectedCells` использует как запрет записи. На текущем наборе — 130 клеток.
+
+## Игровой пакет
+
+- `42/` — B42-пакет `PersonalWorldGen`;
+- `tools/build_mod.py` собирает `42/media/java/client/PersonalWorldGen.jar`;
+- Java-ядро 0.1.0 только планирует данные, `worldWrites=0`.

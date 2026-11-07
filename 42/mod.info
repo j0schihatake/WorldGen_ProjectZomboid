@@ -1,0 +1,10 @@
+name=Personal WorldGen — собственный генератор
+id=PersonalWorldGen
+modversion=0.1.0
+versionMin=42.21
+versionMax=42.21
+require=\ZombieBuddy
+javaJarFile=media/java/client/PersonalWorldGen.jar
+javaPkgName=personal.worldgen
+ZBVersionMin=2.3.4
+description=Собственный Java-генератор мира: профиль карт, участки, лагеря, дома и дороги. Пока только планирует данные и ничего не пишет в мир.
