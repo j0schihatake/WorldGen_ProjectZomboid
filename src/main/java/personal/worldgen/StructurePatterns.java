@@ -58,6 +58,25 @@ public final class StructurePatterns {
     public static MapPattern.Pattern tinyCamp() { return box(3, 3, "fence"); }
     public static MapPattern.Pattern hugeCamp() { return box(12, 12, "fence"); }
 
+    public static MapPattern.Pattern barracks() { return box(10, 6, "wall"); }
+    public static MapPattern.Pattern hospital() { return box(12, 10, "wall"); }
+    public static MapPattern.Pattern church() { return box(8, 12, "wall"); }
+    public static MapPattern.Pattern school() { return box(14, 8, "wall"); }
+    public static MapPattern.Pattern gasStation() { return box(6, 5, "wall"); }
+    public static MapPattern.Pattern farmField() { return box(10, 10, "soil"); }
+    public static MapPattern.Pattern junkyard() { return box(9, 9, "fence"); }
+    public static MapPattern.Pattern motel() { return box(14, 5, "wall"); }
+    public static MapPattern.Pattern policeStation() { return box(9, 7, "wall"); }
+    public static MapPattern.Pattern warehouseRoad() { return road(16); }
+
+    public static String landmarksDemo() {
+        return "barracks=" + barracks().cells().size() + " hospital=" + hospital().cells().size()
+                + " church=" + church().cells().size() + " school=" + school().cells().size()
+                + " gas=" + gasStation().cells().size() + " field=" + farmField().cells().size()
+                + " junkyard=" + junkyard().cells().size() + " motel=" + motel().cells().size()
+                + " police=" + policeStation().cells().size() + " road=" + warehouseRoad().cells().size();
+    }
+
     public static String demo() {
         return "house=" + house().cells().size() + " shop=" + shop().cells().size()
                 + " warehouse=" + warehouse().cells().size() + " camp=" + camp().cells().size()
