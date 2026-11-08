@@ -47,6 +47,7 @@ local function start()
     print("[PersonalWorldGen] " .. tostring(service:status()))
     print("[PersonalWorldGen] demo " .. tostring(service:planDemo(42)))
     print("[PersonalWorldGen] pattern " .. tostring(service:patternDemo()))
+    print("[PersonalWorldGen] library " .. tostring(service:patternLibraryDemo()))
     local player = getSpecificPlayer(0)
     if player then
         local data = player:getModData()
