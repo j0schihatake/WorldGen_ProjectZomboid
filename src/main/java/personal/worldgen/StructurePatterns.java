@@ -30,6 +30,27 @@ public final class StructurePatterns {
     public static MapPattern.Pattern checkpoint() { return box(4, 3, "barrier"); }
     public static MapPattern.Pattern parking() { return box(5, 4, "asphalt"); }
 
+    public static MapPattern.Pattern smallHouse() { return box(4, 4, "wall"); }
+    public static MapPattern.Pattern largeHouse() { return box(8, 7, "wall"); }
+    public static MapPattern.Pattern smallShop() { return box(6, 4, "wall"); }
+    public static MapPattern.Pattern largeShop() { return box(10, 8, "wall"); }
+    public static MapPattern.Pattern smallWarehouse() { return box(8, 6, "wall"); }
+    public static MapPattern.Pattern largeWarehouse() { return box(16, 12, "wall"); }
+    public static MapPattern.Pattern smallCamp() { return box(4, 4, "fence"); }
+    public static MapPattern.Pattern largeCamp() { return box(8, 8, "fence"); }
+    public static MapPattern.Pattern shortRoad() { return road(3); }
+    public static MapPattern.Pattern longRoad() { return road(12); }
+    public static MapPattern.Pattern wideGate() { return new MapPattern.Pattern(5, 1, List.of(new MapPattern.Cell(2, 0, "gate"))); }
+    public static MapPattern.Pattern doubleGate() { return new MapPattern.Pattern(5, 1, List.of(new MapPattern.Cell(1, 0, "gate"), new MapPattern.Cell(3, 0, "gate"))); }
+    public static MapPattern.Pattern smallGarden() { return box(3, 3, "soil"); }
+    public static MapPattern.Pattern largeGarden() { return box(6, 6, "soil"); }
+    public static MapPattern.Pattern smallCheckpoint() { return box(3, 2, "barrier"); }
+    public static MapPattern.Pattern largeCheckpoint() { return box(6, 4, "barrier"); }
+    public static MapPattern.Pattern smallParking() { return box(4, 3, "asphalt"); }
+    public static MapPattern.Pattern largeParking() { return box(8, 6, "asphalt"); }
+    public static MapPattern.Pattern tinyFence() { return fence(2); }
+    public static MapPattern.Pattern longFence() { return fence(10); }
+
     public static String demo() {
         return "house=" + house().cells().size() + " shop=" + shop().cells().size()
                 + " warehouse=" + warehouse().cells().size() + " camp=" + camp().cells().size()

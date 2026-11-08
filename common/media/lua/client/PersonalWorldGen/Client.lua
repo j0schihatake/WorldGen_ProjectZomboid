@@ -52,6 +52,7 @@ local function start()
     print("[PersonalWorldGen] ops " .. tostring(service:patternOpsDemo()))
     print("[PersonalWorldGen] regions " .. tostring(service:regionRegistryDemo()))
     print("[PersonalWorldGen] structures " .. tostring(service:structurePatternsDemo()))
+    print("[PersonalWorldGen] variants " .. tostring(service:structureVariantsDemo()))
     local player = getSpecificPlayer(0)
     if player then
         local data = player:getModData()

@@ -6,7 +6,7 @@ import java.util.concurrent.Executors;
 /** Read-only game-facing entry point. Plans data; never writes to the world yet. */
 @me.zed_0xff.zombie_buddy.Exposer.LuaClass
 public final class PersonalWorldGenAPI {
-    public static final String VERSION = "1.7.0";
+    public static final String VERSION = "1.8.0";
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
 
     private PersonalWorldGenAPI() {}
@@ -229,6 +229,12 @@ public final class PersonalWorldGenAPI {
     public String patternDemo() { return MapPattern.demo(); }
     public String regionRegistryDemo() { return RegionRegistry.demo(); }
     public String structurePatternsDemo() { return StructurePatterns.demo(); }
+    public String structureVariantsDemo() {
+        return "smallHouse=" + StructurePatterns.smallHouse().cells().size()
+                + " largeWarehouse=" + StructurePatterns.largeWarehouse().cells().size()
+                + " doubleGate=" + StructurePatterns.doubleGate().cells().size()
+                + " longRoad=" + StructurePatterns.longRoad().cells().size();
+    }
 
     public String patternOpsDemo() {
         var base = new MapPattern.Pattern(2, 2, java.util.List.of(
