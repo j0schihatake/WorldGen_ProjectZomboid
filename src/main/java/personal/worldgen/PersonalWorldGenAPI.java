@@ -6,7 +6,7 @@ import java.util.concurrent.Executors;
 /** Read-only game-facing entry point. Plans data; never writes to the world yet. */
 @me.zed_0xff.zombie_buddy.Exposer.LuaClass
 public final class PersonalWorldGenAPI {
-    public static final String VERSION = "1.1.0";
+    public static final String VERSION = "1.2.0";
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
 
     private PersonalWorldGenAPI() {}
@@ -177,7 +177,7 @@ public final class PersonalWorldGenAPI {
             planResult = null;
             planner.submit(() -> {
                 try {
-                    planResult = CampPlanner.plan(new Site(x, y, 32, 32), VERSION, 42, 8);
+                    planResult = CampPlanner.plan(new Site(x, y, 16, 16), VERSION, 42, 2);
                     planState = "ready";
                 } catch (Throwable error) {
                     planState = "error=" + error.getClass().getSimpleName();
