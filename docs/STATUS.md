@@ -58,3 +58,7 @@
 
 - `parse`, `hash`, `trim`, `countKinds`, `bounds`.
 - `RegionRegistry`: remember/has/forget/clear/first/last/at/list/summary.
+
+## 1.7.0 — паттерны структур
+
+- 10 структур: дом, магазин, склад, лагерь, дорога, ворота, забор, огород, КПП, парковка.
