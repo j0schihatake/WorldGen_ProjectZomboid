@@ -6,7 +6,7 @@ import java.util.concurrent.Executors;
 /** Read-only game-facing entry point. Plans data; never writes to the world yet. */
 @me.zed_0xff.zombie_buddy.Exposer.LuaClass
 public final class PersonalWorldGenAPI {
-    public static final String VERSION = "1.4.0";
+    public static final String VERSION = "1.6.0";
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
 
     private PersonalWorldGenAPI() {}
@@ -227,6 +227,27 @@ public final class PersonalWorldGenAPI {
     }
 
     public String patternDemo() { return MapPattern.demo(); }
+    public String regionRegistryDemo() { return RegionRegistry.demo(); }
+
+    public String patternOpsDemo() {
+        var base = new MapPattern.Pattern(2, 2, java.util.List.of(
+                new MapPattern.Cell(0, 0, "wall"), new MapPattern.Cell(1, 1, "door")));
+        var parsed = MapPattern.parse(MapPattern.serialize(base));
+        var bounds = MapPattern.bounds(base);
+        return "parsed=" + (parsed != null) + " hash=" + MapPattern.hash(base)
+                + " trim=" + MapPattern.trim(base).width() + " kinds=" + MapPattern.countKinds(base)
+                + " bounds=" + bounds[0] + "," + bounds[1] + "," + bounds[2] + "," + bounds[3];
+    }
+
+    public String patternEngineDemo() {
+        var base = new MapPattern.Pattern(2, 2, java.util.List.of(
+                new MapPattern.Cell(0, 0, "wall"), new MapPattern.Cell(1, 1, "door")));
+        var t = MapPattern.transpose(base);
+        return "valid=" + MapPattern.valid(base) + " transpose=" + t.width() + "x" + t.height()
+                + " rotate180=" + MapPattern.rotate180(base).cells().size()
+                + " serialized=" + MapPattern.serialize(base).length();
+    }
+
     public String patternLibraryDemo() { return PatternLibrary.demo(); }
 
     /** Generates one named region exactly once in this process. */

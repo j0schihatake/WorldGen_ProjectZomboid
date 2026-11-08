@@ -47,3 +47,14 @@
 - `PatternLibrary`: ограниченная библиотека, детерминированный выбор.
 - Паттерны дороги и здания.
 - Лог `library ...`.
+
+## 1.5.0 — проверка и трансформации паттернов
+
+- `transpose`, `rotate180`, `valid`, `serialize`.
+- Библиотека: `has`, `remove`, `clear`, `all`.
+- Лог `engine ...`.
+
+## 1.6.0 — операции с паттернами и реестр регионов
+
+- `parse`, `hash`, `trim`, `countKinds`, `bounds`.
+- `RegionRegistry`: remember/has/forget/clear/first/last/at/list/summary.

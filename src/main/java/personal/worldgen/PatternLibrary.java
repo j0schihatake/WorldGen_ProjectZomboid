@@ -36,6 +36,11 @@ public final class PatternLibrary {
         return "building=" + cells.size();
     }
 
+    public boolean has(MapPattern.Pattern pattern) { return patterns.contains(pattern); }
+    public boolean remove(MapPattern.Pattern pattern) { return patterns.remove(pattern); }
+    public void clear() { patterns.clear(); }
+    public java.util.List<MapPattern.Pattern> all() { return List.copyOf(patterns); }
+
     public int size() { return patterns.size(); }
 
     public static String demo() {
