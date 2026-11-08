@@ -37,3 +37,7 @@
 
 - План у края уменьшен до 16×16 и 2 объектов, чтобы целиком попадать в загруженные чанки.
 - Игра: `bg commit placed=2 remaining=0 worldWrites=2`.
+
+## 1.3.0 — трансформации паттернов
+
+- `MapPattern.rotate/mirror`; лог `pattern base=3 rotated=2x3 mirrored=3`.
