@@ -51,6 +51,13 @@ public final class StructurePatterns {
     public static MapPattern.Pattern tinyFence() { return fence(2); }
     public static MapPattern.Pattern longFence() { return fence(10); }
 
+    public static MapPattern.Pattern tinyHouse() { return box(3, 3, "wall"); }
+    public static MapPattern.Pattern hugeHouse() { return box(12, 10, "wall"); }
+    public static MapPattern.Pattern tinyShop() { return box(4, 3, "wall"); }
+    public static MapPattern.Pattern hugeShop() { return box(14, 10, "wall"); }
+    public static MapPattern.Pattern tinyCamp() { return box(3, 3, "fence"); }
+    public static MapPattern.Pattern hugeCamp() { return box(12, 12, "fence"); }
+
     public static String demo() {
         return "house=" + house().cells().size() + " shop=" + shop().cells().size()
                 + " warehouse=" + warehouse().cells().size() + " camp=" + camp().cells().size()
