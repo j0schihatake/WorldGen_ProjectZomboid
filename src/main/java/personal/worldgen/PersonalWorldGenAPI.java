@@ -6,7 +6,7 @@ import java.util.concurrent.Executors;
 /** Read-only game-facing entry point. Plans data; never writes to the world yet. */
 @me.zed_0xff.zombie_buddy.Exposer.LuaClass
 public final class PersonalWorldGenAPI {
-    public static final String VERSION = "1.0.0";
+    public static final String VERSION = "1.1.0";
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
 
     private PersonalWorldGenAPI() {}
@@ -226,6 +226,21 @@ public final class PersonalWorldGenAPI {
         } catch (Throwable error) { return "commit-error=" + error.getClass().getSimpleName(); }
     }
 
+    /** Generates one named region exactly once in this process. */
+    public String generateOnce(Object player, String id) {
+        if (id == null || id.isBlank()) return "no-id";
+        if (!generated.add(id)) return "already-generated " + id;
+        String camp = placeCamp(player);
+        return "generated " + id + " " + camp;
+    }
+
+    public String generatedRegions() { return String.join(",", generated); }
+
+    public void restoreGenerated(String csv) {
+        if (csv == null || csv.isBlank()) return;
+        for (String id : csv.split(",")) if (!id.isBlank()) generated.add(id.trim());
+    }
+
     /** One bounded test-site pipeline: camp, road and building markers. */
     public String generateTestSite(Object player) {
         String camp = placeCamp(player);
@@ -284,6 +299,7 @@ public final class PersonalWorldGenAPI {
     private volatile SitePlan planResult;
     private volatile int planIndex = 0;
     private volatile String edgeInfo = "unknown";
+    private final java.util.Set<String> generated = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     private MapProfile profile() throws java.io.IOException {
         try (var input = PersonalWorldGenAPI.class.getResourceAsStream("/personal/worldgen/profile.tsv")) {

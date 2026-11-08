@@ -48,7 +48,19 @@ local function start()
     print("[PersonalWorldGen] demo " .. tostring(service:planDemo(42)))
     local player = getSpecificPlayer(0)
     if player then
+        local data = player:getModData()
+        service:restoreGenerated(tostring(data.PersonalWorldGenRegions or ""))
         print("[PersonalWorldGen] near " .. tostring(service:planNearPlayer(player, 42)))
+        local lastSave = 0
+        local saveTick
+        saveTick = function()
+            local now = getTimestampMs()
+            if now - lastSave >= 60000 then
+                lastSave = now
+                data.PersonalWorldGenRegions = tostring(service:generatedRegions())
+            end
+        end
+        Events.OnTick.Add(saveTick)
     end
     return true
 end
