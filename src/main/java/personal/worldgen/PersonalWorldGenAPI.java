@@ -6,7 +6,7 @@ import java.util.concurrent.Executors;
 /** Read-only game-facing entry point. Plans data; never writes to the world yet. */
 @me.zed_0xff.zombie_buddy.Exposer.LuaClass
 public final class PersonalWorldGenAPI {
-    public static final String VERSION = "0.9.0";
+    public static final String VERSION = "1.0.0";
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
 
     private PersonalWorldGenAPI() {}
@@ -125,12 +125,54 @@ public final class PersonalWorldGenAPI {
         }
     }
 
+    /** Farthest loaded chunk in eight directions, then one chunk beyond it. */
+    private int[] edgePoint(Object player) throws ReflectiveOperationException {
+        int px = ((Number) player.getClass().getMethod("getXi").invoke(player)).intValue();
+        int py = ((Number) player.getClass().getMethod("getYi").invoke(player)).intValue();
+        Object cell = player.getClass().getMethod("getCell").invoke(player);
+        int pcx = Math.floorDiv(px, 10), pcy = Math.floorDiv(py, 10);
+        int[][] dirs = {{1,0},{-1,0},{0,1},{0,-1},{1,1},{1,-1},{-1,1},{-1,-1}};
+        int bestX = pcx, bestY = pcy, bestDistance = 0, bestDx = 1, bestDy = 0;
+        for (int[] dir : dirs) {
+            for (int distance = 1; distance <= 12; distance++) {
+                int cx = pcx + dir[0] * distance, cy = pcy + dir[1] * distance;
+                Object chunk = cell.getClass().getMethod("getChunkForGridSquare",
+                                int.class, int.class, int.class)
+                        .invoke(cell, cx * 10 + 5, cy * 10 + 5, 0);
+                if (chunk == null) break;
+                boolean loaded;
+                try { loaded = chunk.getClass().getField("loaded").getBoolean(chunk); }
+                catch (Throwable stop) { break; }
+                if (!loaded) break;
+                if (distance > bestDistance) {
+                    bestDistance = distance;
+                    bestX = cx;
+                    bestY = cy;
+                    bestDx = dir[0];
+                    bestDy = dir[1];
+                }
+            }
+        }
+        int x = bestX * 10 + 5;
+        int y = bestY * 10 + 5;
+        edgeInfo = "edgeChunk=" + bestX + "," + bestY + " distance=" + bestDistance
+                + " x=" + x + " y=" + y;
+        return new int[]{x, y};
+    }
+
+    public String edgeStatus(Object player) {
+        if (player == null) return "no-player";
+        try { edgePoint(player); return edgeInfo; }
+        catch (Throwable error) { return "edge-error=" + error.getClass().getSimpleName(); }
+    }
+
     /** Plans in a background thread; never touches game objects there. */
     public String startBackgroundPlan(Object player) {
         if (player == null) return "no-player";
         try {
-            int x = ((Number) player.getClass().getMethod("getXi").invoke(player)).intValue() + 32;
-            int y = ((Number) player.getClass().getMethod("getYi").invoke(player)).intValue() + 32;
+            int[] edge = edgePoint(player);
+            int x = edge[0];
+            int y = edge[1];
             planState = "planning";
             planResult = null;
             planner.submit(() -> {
@@ -149,25 +191,38 @@ public final class PersonalWorldGenAPI {
 
     /** Main thread only: commits the finished background plan. */
     public String commitBackgroundPlan(Object player) {
+        return commitBackgroundPlan(player, 8);
+    }
+
+    /** Main thread only: commits at most {@code maxOps} steps per call. */
+    public String commitBackgroundPlan(Object player, int maxOps) {
         SitePlan plan = planResult;
         if (plan == null) return "not-ready";
         if (player == null) return "no-player";
+        int budget = Math.max(1, Math.min(8, maxOps));
         try {
             Object cell = player.getClass().getMethod("getCell").invoke(player);
             int placed = 0;
-            for (var step : plan.steps()) {
+            while (planIndex < plan.steps().size() && placed < budget) {
+                var step = plan.steps().get(planIndex);
                 try {
                     Object target = cell.getClass().getMethod("getGridSquare", int.class, int.class, int.class)
                             .invoke(cell, plan.site().x() + step.dx(), plan.site().y() + step.dy(), 0);
-                    if (target == null) continue;
-                    target.getClass().getMethod("AddWorldInventoryItem", String.class, float.class, float.class, float.class)
-                            .invoke(target, "Base.Hammer", 0.5f, 0.5f, 0f);
-                    placed++;
+                    if (target != null) {
+                        target.getClass().getMethod("AddWorldInventoryItem", String.class, float.class, float.class, float.class)
+                                .invoke(target, "Base.Hammer", 0.5f, 0.5f, 0f);
+                        placed++;
+                    }
                 } catch (Throwable ignored) { }
+                planIndex++;
             }
-            planResult = null;
-            planState = "idle";
-            return "commit placed=" + placed + " worldWrites=" + placed;
+            int remaining = Math.max(0, plan.steps().size() - planIndex);
+            if (remaining == 0) {
+                planResult = null;
+                planIndex = 0;
+                planState = "idle";
+            }
+            return "commit placed=" + placed + " remaining=" + remaining + " worldWrites=" + placed;
         } catch (Throwable error) { return "commit-error=" + error.getClass().getSimpleName(); }
     }
 
@@ -227,6 +282,8 @@ public final class PersonalWorldGenAPI {
     });
     private volatile String planState = "idle";
     private volatile SitePlan planResult;
+    private volatile int planIndex = 0;
+    private volatile String edgeInfo = "unknown";
 
     private MapProfile profile() throws java.io.IOException {
         try (var input = PersonalWorldGenAPI.class.getResourceAsStream("/personal/worldgen/profile.tsv")) {
