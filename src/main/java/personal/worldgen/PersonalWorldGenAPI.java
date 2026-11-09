@@ -6,7 +6,7 @@ import java.util.concurrent.Executors;
 /** Read-only game-facing entry point. Plans data; never writes to the world yet. */
 @me.zed_0xff.zombie_buddy.Exposer.LuaClass
 public final class PersonalWorldGenAPI {
-    public static final String VERSION = "1.12.0";
+    public static final String VERSION = "1.13.0";
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
 
     private PersonalWorldGenAPI() {}
@@ -96,6 +96,32 @@ public final class PersonalWorldGenAPI {
         } catch (Throwable error) {
             return "road-error=" + error.getClass().getSimpleName() + " worldWrites=0";
         }
+    }
+
+    /** Places real wall objects from the building plan, bounded to 32. */
+    public String placeRealBuilding(Object player) {
+        if (player == null) return "no-player";
+        try {
+            var plan = BuildingPlanner.plan(new Site(0, 0, 48, 40), VERSION, 42, 3);
+            Object cell = player.getClass().getMethod("getCell").invoke(player);
+            Class<?> squareClass = Class.forName("zombie.iso.IsoGridSquare");
+            Class<?> objectClass = Class.forName("zombie.iso.IsoObject");
+            int bx = ((Number) player.getClass().getMethod("getXi").invoke(player)).intValue();
+            int by = ((Number) player.getClass().getMethod("getYi").invoke(player)).intValue();
+            int bz = ((Number) player.getClass().getMethod("getZi").invoke(player)).intValue();
+            int placed = 0;
+            for (var step : plan.steps()) {
+                if (!"wall".equals(step.kind()) || placed >= 32) continue;
+                Object target = cell.getClass().getMethod("getGridSquare", int.class, int.class, int.class)
+                        .invoke(cell, bx + step.dx(), by + step.dy(), bz);
+                if (target == null) continue;
+                Object object = objectClass.getConstructor(squareClass, String.class)
+                        .newInstance(target, "walls_exterior_house_01_0");
+                object.getClass().getMethod("addToWorld").invoke(object);
+                placed++;
+            }
+            return "realBuildingWalls=" + placed + " worldWrites=" + placed;
+        } catch (Throwable error) { return "building-wall-error=" + error.getClass().getSimpleName() + " worldWrites=0"; }
     }
 
     /** Places a bounded building marker set into the test world. */
@@ -265,7 +291,7 @@ public final class PersonalWorldGenAPI {
         if (!generated.add("start-site")) return "already-generated start-site";
         String camp = placeCamp(player);
         String road = placeRoad(player);
-        String building = placeBuilding(player);
+        String building = placeRealBuilding(player);
         String wall = placeRealWall(player);
         return "start camp=" + camp + " road=" + road + " building=" + building + " wall=" + wall;
     }
