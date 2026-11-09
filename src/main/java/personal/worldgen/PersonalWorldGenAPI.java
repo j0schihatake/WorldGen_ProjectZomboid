@@ -6,7 +6,7 @@ import java.util.concurrent.Executors;
 /** Read-only game-facing entry point. Plans data; never writes to the world yet. */
 @me.zed_0xff.zombie_buddy.Exposer.LuaClass
 public final class PersonalWorldGenAPI {
-    public static final String VERSION = "1.14.0";
+    public static final String VERSION = "1.15.0";
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
 
     private PersonalWorldGenAPI() {}
@@ -109,18 +109,30 @@ public final class PersonalWorldGenAPI {
             int bx = ((Number) player.getClass().getMethod("getXi").invoke(player)).intValue();
             int by = ((Number) player.getClass().getMethod("getYi").invoke(player)).intValue();
             int bz = ((Number) player.getClass().getMethod("getZi").invoke(player)).intValue();
-            int placed = 0;
+            int walls = 0, floors = 0, doors = 0;
             for (var step : plan.steps()) {
-                if (!"wall".equals(step.kind()) || placed >= 32) continue;
+                if ("wall".equals(step.kind()) && walls >= 32) continue;
+                if ("floor".equals(step.kind()) && floors >= 24) continue;
+                if ("door".equals(step.kind()) && doors >= 8) continue;
+                String sprite = switch (step.kind()) {
+                    case "wall" -> "walls_exterior_house_01_0";
+                    case "floor" -> "floors_interior_carpet_01_0";
+                    case "door" -> "doors_01_0";
+                    default -> "";
+                };
+                if (sprite.isEmpty()) continue;
                 Object target = cell.getClass().getMethod("getGridSquare", int.class, int.class, int.class)
                         .invoke(cell, bx + step.dx(), by + step.dy(), bz);
                 if (target == null) continue;
                 Object object = objectClass.getConstructor(squareClass, String.class)
-                        .newInstance(target, "walls_exterior_house_01_0");
+                        .newInstance(target, sprite);
                 object.getClass().getMethod("addToWorld").invoke(object);
-                placed++;
+                if ("wall".equals(step.kind())) walls++;
+                else if ("floor".equals(step.kind())) floors++;
+                else doors++;
             }
-            return "realBuildingWalls=" + placed + " worldWrites=" + placed;
+            return "realBuildingWalls=" + walls + " floors=" + floors + " doors=" + doors
+                    + " worldWrites=" + (walls + floors + doors);
         } catch (Throwable error) { return "building-wall-error=" + error.getClass().getSimpleName() + " worldWrites=0"; }
     }
 
