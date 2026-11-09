@@ -6,7 +6,7 @@ import java.util.concurrent.Executors;
 /** Read-only game-facing entry point. Plans data; never writes to the world yet. */
 @me.zed_0xff.zombie_buddy.Exposer.LuaClass
 public final class PersonalWorldGenAPI {
-    public static final String VERSION = "1.11.0";
+    public static final String VERSION = "1.12.0";
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
 
     private PersonalWorldGenAPI() {}
@@ -266,7 +266,8 @@ public final class PersonalWorldGenAPI {
         String camp = placeCamp(player);
         String road = placeRoad(player);
         String building = placeBuilding(player);
-        return "start camp=" + camp + " road=" + road + " building=" + building;
+        String wall = placeRealWall(player);
+        return "start camp=" + camp + " road=" + road + " building=" + building + " wall=" + wall;
     }
 
     public String generateOnce(Object player, String id) {
