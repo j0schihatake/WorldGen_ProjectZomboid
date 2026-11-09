@@ -58,6 +58,11 @@ local function start()
     if player then
         local data = player:getModData()
         service:restoreGenerated(tostring(data.PersonalWorldGenRegions or ""))
+        if getGameTime and getGameTime():getWorldAgeHours() < 1
+                and not string.find(service:generatedRegions(), "start-site", 1, true) then
+            print("[PersonalWorldGen] auto " .. tostring(service:generateStart(player)))
+            data.PersonalWorldGenRegions = tostring(service:generatedRegions())
+        end
         print("[PersonalWorldGen] near " .. tostring(service:planNearPlayer(player, 42)))
         local lastSave = 0
         local saveTick

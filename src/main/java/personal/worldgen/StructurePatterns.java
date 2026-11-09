@@ -69,6 +69,21 @@ public final class StructurePatterns {
     public static MapPattern.Pattern policeStation() { return box(9, 7, "wall"); }
     public static MapPattern.Pattern warehouseRoad() { return road(16); }
 
+    public static MapPattern.Pattern fireStation() { return box(10, 8, "wall"); }
+    public static MapPattern.Pattern clinic() { return box(8, 6, "wall"); }
+    public static MapPattern.Pattern pharmacy() { return box(6, 5, "wall"); }
+    public static MapPattern.Pattern bank() { return box(9, 7, "wall"); }
+    public static MapPattern.Pattern diner() { return box(7, 5, "wall"); }
+    public static MapPattern.Pattern bar() { return box(6, 6, "wall"); }
+    public static MapPattern.Pattern restaurant() { return box(9, 7, "wall"); }
+    public static MapPattern.Pattern hardware() { return box(10, 8, "wall"); }
+    public static MapPattern.Pattern gunShop() { return box(6, 5, "wall"); }
+    public static MapPattern.Pattern gym() { return box(8, 6, "wall"); }
+    public static MapPattern.Pattern apartment() { return box(10, 12, "wall"); }
+    public static MapPattern.Pattern trailer() { return box(5, 3, "wall"); }
+    public static MapPattern.Pattern farmhouse() { return box(7, 6, "wall"); }
+    public static MapPattern.Pattern barn() { return box(9, 11, "wall"); }
+
     public static String landmarksDemo() {
         return "barracks=" + barracks().cells().size() + " hospital=" + hospital().cells().size()
                 + " church=" + church().cells().size() + " school=" + school().cells().size()
