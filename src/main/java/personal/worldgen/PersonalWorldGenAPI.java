@@ -6,7 +6,7 @@ import java.util.concurrent.Executors;
 /** Read-only game-facing entry point. Plans data; never writes to the world yet. */
 @me.zed_0xff.zombie_buddy.Exposer.LuaClass
 public final class PersonalWorldGenAPI {
-    public static final String VERSION = "1.18.4";
+    public static final String VERSION = "1.18.5";
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
 
     private PersonalWorldGenAPI() {}
@@ -458,30 +458,36 @@ public final class PersonalWorldGenAPI {
         try {
             double px = ((Number) player.getClass().getMethod("getX").invoke(player)).doubleValue();
             double py = ((Number) player.getClass().getMethod("getY").invoke(player)).doubleValue();
-            int x = (int) px + 10;
-            int y = (int) py + 10;
             var guard = new ProtectedCells(256, profile());
-            var campSite = new Site(x, y, 32, 32);
-            var buildingSite = new Site(x + 40, y, 48, 40);
-            var roadTarget = new Site(x + 120, y, 16, 16);
-            if (!guard.allows(campSite.x(), campSite.y(), campSite.width(), campSite.height(), 0)
-                    || !guard.allows(buildingSite.x(), buildingSite.y(), buildingSite.width(), buildingSite.height(), 0)) {
-                return "x=" + x + " y=" + y + " protected=true worldWrites=0";
-            }
-            SettlementPlanner.Settlement settlement;
-            try {
-                settlement = SettlementPlanner.planValidated(campSite, buildingSite, roadTarget,
-                        VERSION, seed, guard, 0);
-            } catch (IllegalArgumentException protectedPlan) {
-                return "x=" + x + " y=" + y + " protected=true worldWrites=0";
-            }
-            return "x=" + x + " y=" + y + " campOps=" + settlement.camp().operations()
-                    + " buildingOps=" + settlement.building().steps().size()
-                    + " roadPoints=" + settlement.road().size()
-                    + " protected=false worldWrites=0";
+            return planNear(px, py, seed, guard);
         } catch (ReflectiveOperationException | java.io.IOException error) {
             return "player-probe-failed=" + error.getClass().getSimpleName();
         }
+    }
+
+    /** Pure settlement probe; the caller supplies the protected-cell guard. */
+    public String planNear(double px, double py, long seed, ProtectedCells guard) {
+        if (guard == null || !Double.isFinite(px + py)) return "invalid-input";
+        int x = (int) px + 10;
+        int y = (int) py + 10;
+        var campSite = new Site(x, y, 32, 32);
+        var buildingSite = new Site(x + 40, y, 48, 40);
+        var roadTarget = new Site(x + 120, y, 16, 16);
+        if (!guard.allows(campSite.x(), campSite.y(), campSite.width(), campSite.height(), 0)
+                || !guard.allows(buildingSite.x(), buildingSite.y(), buildingSite.width(), buildingSite.height(), 0)) {
+            return "x=" + x + " y=" + y + " protected=true worldWrites=0";
+        }
+        SettlementPlanner.Settlement settlement;
+        try {
+            settlement = SettlementPlanner.planValidated(campSite, buildingSite, roadTarget,
+                    VERSION, seed, guard, 0);
+        } catch (IllegalArgumentException protectedPlan) {
+            return "x=" + x + " y=" + y + " protected=true worldWrites=0";
+        }
+        return "x=" + x + " y=" + y + " campOps=" + settlement.camp().operations()
+                + " buildingOps=" + settlement.building().steps().size()
+                + " roadPoints=" + settlement.road().size()
+                + " protected=false worldWrites=0";
     }
 
     public String planDemo(long seed) {
