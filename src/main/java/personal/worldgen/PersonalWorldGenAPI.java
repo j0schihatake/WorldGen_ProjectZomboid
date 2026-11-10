@@ -11,6 +11,7 @@ public final class PersonalWorldGenAPI {
 
     private volatile boolean writesEnabled = false;
     private final WriteBudget writeBudget = new WriteBudget(256);
+    private final personal.worldgen.db.WorldDatabase worldDb = personal.worldgen.db.WorldDatabase.getInstance();
     private volatile boolean batchWrite = false;
     private volatile int protectedPadding = 0;
     private volatile long worldSeed = 42L;
@@ -31,6 +32,24 @@ public final class PersonalWorldGenAPI {
         } catch (Exception error) {
             return "core=" + VERSION + " profile=missing writes=off worldWrites=0 mode=planning";
         }
+    }
+
+    public String worldDbPutPlan(String id, String data) {
+        worldDb.put("plans", id, data);
+        return "plan=" + id;
+    }
+
+    public String worldDbGetPlan(String id) { return worldDb.get("plans", id, ""); }
+
+    public String worldDbPutRegion(String id, String data) {
+        worldDb.put("regions", id, data);
+        return "region=" + id;
+    }
+
+    public String worldDbGetRegion(String id) { return worldDb.get("regions", id, ""); }
+
+    public String worldDbStatus() {
+        return "writes=" + worldDb.writeCount() + " path=" + worldDb.path();
     }
 
     public String worldgenSettings() {

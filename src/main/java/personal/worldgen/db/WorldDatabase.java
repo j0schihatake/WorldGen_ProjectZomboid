@@ -1,0 +1,102 @@
+package personal.worldgen.db;
+
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+/** Per-save SQLite store for generated regions, plans and write records. */
+public final class WorldDatabase {
+    private static volatile WorldDatabase instance;
+    private static volatile String activeSave = "";
+    private final Path path;
+    private Connection connection;
+
+    public WorldDatabase(Path path) { this.path = path; }
+
+    public static WorldDatabase getInstance() {
+        var save = currentSave();
+        var local = instance;
+        if (local == null || !save.equals(activeSave)) synchronized (WorldDatabase.class) {
+            if (instance == null || !save.equals(activeSave)) {
+                if (instance != null) instance.close();
+                instance = new WorldDatabase(pathFor(save));
+                activeSave = save;
+            }
+            local = instance;
+        }
+        return local;
+    }
+
+    private static String currentSave() {
+        try {
+            var core = Class.forName("zombie.core.Core").getMethod("getInstance").invoke(null);
+            var folder = String.valueOf(core.getClass().getMethod("getSaveFolder").invoke(core));
+            return folder == null || folder.isBlank() || "null".equals(folder) ? "" : folder;
+        } catch (Throwable ignored) { return ""; }
+    }
+
+    private static Path pathFor(String save) {
+        if (save != null && !save.isBlank()) return Path.of(save, "PersonalWorldGen.db");
+        try {
+            var core = Class.forName("zombie.core.Core");
+            return Path.of(String.valueOf(core.getMethod("getLuaCacheDir").invoke(null)), "PersonalWorldGen.db");
+        } catch (Throwable ignored) {
+            return Path.of(System.getProperty("user.home"), "Zomboid", "Lua", "PersonalWorldGen.db");
+        }
+    }
+
+    private synchronized Connection connection() throws Exception {
+        if (connection != null && !connection.isClosed()) return connection;
+        Files.createDirectories(path.getParent());
+        Class.forName("org.sqlite.JDBC");
+        connection = DriverManager.getConnection("jdbc:sqlite:" + path.toAbsolutePath());
+        try (InputStream input = WorldDatabase.class.getResourceAsStream("/personal/worldgen/db/schema.sql")) {
+            if (input != null) {
+                String sql = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+                try (Statement statement = connection.createStatement()) {
+                    for (String part : sql.split(";")) if (!part.isBlank()) statement.execute(part);
+                }
+            }
+        }
+        return connection;
+    }
+
+    public synchronized void put(String table, String id, String data) {
+        if (id == null || data == null) return;
+        try (PreparedStatement s = connection().prepareStatement(
+                "INSERT OR REPLACE INTO " + table + "(id,data) VALUES(?,?)")) {
+            s.setString(1, id); s.setString(2, data); s.executeUpdate();
+        } catch (Exception ignored) { }
+    }
+
+    public synchronized String get(String table, String id, String fallback) {
+        if (id == null) return fallback;
+        try (PreparedStatement s = connection().prepareStatement("SELECT data FROM " + table + " WHERE id=?")) {
+            s.setString(1, id);
+            try (ResultSet rows = s.executeQuery()) { return rows.next() ? rows.getString(1) : fallback; }
+        } catch (Exception ignored) { return fallback; }
+    }
+
+    public synchronized void recordWrite(String id, String kind, int x, int y, int z) {
+        try (PreparedStatement s = connection().prepareStatement(
+                "INSERT OR IGNORE INTO writes(id,kind,x,y,z) VALUES(?,?,?,?,?)")) {
+            s.setString(1, id); s.setString(2, kind); s.setInt(3, x); s.setInt(4, y); s.setInt(5, z);
+            s.executeUpdate();
+        } catch (Exception ignored) { }
+    }
+
+    public synchronized int writeCount() {
+        try (Statement s = connection().createStatement(); ResultSet rows = s.executeQuery("SELECT COUNT(*) FROM writes")) {
+            return rows.next() ? rows.getInt(1) : 0;
+        } catch (Exception ignored) { return 0; }
+    }
+
+    public synchronized void close() { try { if (connection != null) connection.close(); } catch (Exception ignored) { } connection = null; }
+    public Path path() { return path; }
+}

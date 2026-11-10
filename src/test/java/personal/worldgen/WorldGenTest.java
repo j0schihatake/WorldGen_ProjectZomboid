@@ -327,6 +327,7 @@ public final class WorldGenTest {
         assert budget.remaining() == 2;
         budget.setLimit(0);
         assert budget.limit() == 1;
+        personal.worldgen.db.WorldDatabaseTest.run();
         var api = PersonalWorldGenAPI.getInstance();
         assert api.status().contains("writes=off") : "WorldGen writes must default to off";
         assert api.worldgenSettings().contains("writes=off");
