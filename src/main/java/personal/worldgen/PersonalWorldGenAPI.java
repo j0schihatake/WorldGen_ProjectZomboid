@@ -6,7 +6,7 @@ import java.util.concurrent.Executors;
 /** Read-only game-facing entry point. Plans data; never writes to the world yet. */
 @me.zed_0xff.zombie_buddy.Exposer.LuaClass
 public final class PersonalWorldGenAPI {
-    public static final String VERSION = "1.16.0";
+    public static final String VERSION = "1.17.0";
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
 
     private PersonalWorldGenAPI() {}
@@ -325,6 +325,8 @@ public final class PersonalWorldGenAPI {
     public String regionRegistryDemo() { return RegionRegistry.demo(); }
     public String structurePatternsDemo() { return StructurePatterns.demo(); }
     public String structureLandmarksDemo() { return StructurePatterns.landmarksDemo(); }
+
+    public String structureCatalogDemo() { return StructurePatterns.catalogDemo(); }
 
     public String structureVariantsDemo() {
         return "smallHouse=" + StructurePatterns.smallHouse().cells().size()

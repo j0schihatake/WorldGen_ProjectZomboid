@@ -3,7 +3,7 @@ package personal.worldgen;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Ten reusable structure patterns for camps, roads and buildings. */
+/** Reusable structure patterns for camps, roads, civic buildings and housing. */
 public final class StructurePatterns {
     private StructurePatterns() {}
 
@@ -83,6 +83,39 @@ public final class StructurePatterns {
     public static MapPattern.Pattern trailer() { return box(5, 3, "wall"); }
     public static MapPattern.Pattern farmhouse() { return box(7, 6, "wall"); }
     public static MapPattern.Pattern barn() { return box(9, 11, "wall"); }
+
+    public static MapPattern.Pattern townHall() { return box(12, 10, "wall"); }
+    public static MapPattern.Pattern library() { return box(10, 8, "wall"); }
+    public static MapPattern.Pattern museum() { return box(14, 10, "wall"); }
+    public static MapPattern.Pattern cinema() { return box(12, 8, "wall"); }
+    public static MapPattern.Pattern hotel() { return box(12, 14, "wall"); }
+    public static MapPattern.Pattern office() { return box(10, 12, "wall"); }
+    public static MapPattern.Pattern factory() { return box(16, 12, "wall"); }
+    public static MapPattern.Pattern powerPlant() { return box(14, 12, "wall"); }
+    public static MapPattern.Pattern waterPlant() { return box(12, 10, "wall"); }
+    public static MapPattern.Pattern sewage() { return box(10, 8, "wall"); }
+    public static MapPattern.Pattern depot() { return box(14, 10, "wall"); }
+    public static MapPattern.Pattern trainStation() { return box(16, 8, "wall"); }
+    public static MapPattern.Pattern busDepot() { return box(12, 10, "wall"); }
+    public static MapPattern.Pattern garage2() { return box(8, 6, "wall"); }
+    public static MapPattern.Pattern junkyard2() { return box(12, 12, "fence"); }
+    public static MapPattern.Pattern market() { return box(10, 8, "wall"); }
+    public static MapPattern.Pattern mall() { return box(20, 14, "wall"); }
+    public static MapPattern.Pattern motel2() { return box(16, 6, "wall"); }
+    public static MapPattern.Pattern cabin() { return box(5, 4, "wall"); }
+    public static MapPattern.Pattern shack() { return box(3, 3, "wall"); }
+
+    public static String catalogDemo() {
+        var names = new String[]{"townHall", "library", "museum", "cinema", "hotel", "office",
+                "factory", "powerPlant", "waterPlant", "sewage", "depot", "trainStation",
+                "busDepot", "garage2", "junkyard2", "market", "mall", "motel2", "cabin", "shack"};
+        var values = new MapPattern.Pattern[]{townHall(), library(), museum(), cinema(), hotel(),
+                office(), factory(), powerPlant(), waterPlant(), sewage(), depot(), trainStation(),
+                busDepot(), garage2(), junkyard2(), market(), mall(), motel2(), cabin(), shack()};
+        var out = new StringBuilder("count=").append(values.length);
+        for (int i = 0; i < values.length; i++) out.append(' ').append(names[i]).append('=').append(values[i].cells().size());
+        return out.toString();
+    }
 
     public static String landmarksDemo() {
         return "barracks=" + barracks().cells().size() + " hospital=" + hospital().cells().size()

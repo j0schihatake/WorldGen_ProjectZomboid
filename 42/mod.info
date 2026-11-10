@@ -1,8 +1,8 @@
 name=Personal WorldGen — собственный генератор
 id=PersonalWorldGen
-modversion=1.16.0
+modversion=1.17.0
 versionMin=42.21
-versionMax=42.21
+versionMax=42.22
 require=\ZombieBuddy
 javaJarFile=media/java/client/PersonalWorldGen.jar
 javaPkgName=personal.worldgen
