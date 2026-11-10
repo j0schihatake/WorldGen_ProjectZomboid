@@ -37,6 +37,14 @@ python3 tools/export_profile.py
 `profile.tsv` — локальный (в `.gitignore`); `MapProfileIO` загружает его в Java,
 `ProtectedCells` использует как запрет записи. На текущем наборе — 130 клеток.
 
+## PWG-DB-001 — SQLite на каждое сохранение
+
+- Реализация: `WorldDatabase` в `getSaveFolder()/PersonalWorldGen.db`,
+  `schema.sql`; таблицы `regions`, `plans`, `writes`; API `worldDbPutPlan`,
+  `worldDbPutRegion`, `worldDbStatus`.
+- Unit: `World database tests passed: plans upsert, regions and deduplicated writes.`
+- Статус: код и unit PASS в staging-копии; автозапись генерации и игра ещё нет.
+
 ## PWG-06.6 — запись только по явному разрешению
 
 - Причина: игровые write-методы были доступны без release-guard; случайный вызов
