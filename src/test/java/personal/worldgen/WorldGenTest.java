@@ -317,6 +317,15 @@ public final class WorldGenTest {
         try { SettlementPlanner.planValidated(new Site(0, 0, 64, 64), new Site(80, 0, 64, 64),
                 new Site(500, 500, 32, 32), "0.1.0", 7, roadGuard, 0); throw new AssertionError("Protected road accepted"); }
         catch (IllegalArgumentException expected) { }
+        var api = PersonalWorldGenAPI.getInstance();
+        assert api.status().contains("writes=off") : "WorldGen writes must default to off";
+        assert api.worldgenSettings().contains("writes=off");
+        api.setWritesEnabled(true);
+        api.setWriteBudget(64);
+        assert api.worldgenSettings().contains("writes=on") && api.worldgenSettings().contains("writeBudget=64");
+        api.setWritesEnabled(false);
+        api.setWriteBudget(256);
+        assert api.worldgenSettings().contains("writes=off");
         var probeGuard = new ProtectedCells(256, java.util.Set.of());
         var probe = PersonalWorldGenAPI.getInstance().planNear(7999, 11765, 42, probeGuard);
         assert probe.contains("campOps=") && probe.contains("buildingOps=") && probe.contains("roadPoints=")

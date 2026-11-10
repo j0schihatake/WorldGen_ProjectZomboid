@@ -37,6 +37,17 @@ python3 tools/export_profile.py
 `profile.tsv` — локальный (в `.gitignore`); `MapProfileIO` загружает его в Java,
 `ProtectedCells` использует как запрет записи. На текущем наборе — 130 клеток.
 
+## PWG-06.6 — запись только по явному разрешению
+
+- Причина: игровые write-методы были доступны без release-guard; случайный вызов
+  мог писать в пользовательский мир.
+- Реализация: `writesEnabled=false` по умолчанию, `writeBudget` 1–512,
+  `status/worldgenSettings` показывают режим; все place/generate методы
+  возвращают `writes-disabled writes=off worldWrites=0`.
+- Критерии: unit-тесты `writes=off`, явное включение, игровой тест только
+  в disposable dev-копии.
+- Статус: unit PASS; игровой тест после guard ещё не выполнен.
+
 ## PWG-06.1 — ограниченный реестр сгенерированных регионов
 
 - Причина: `generateOnce`/`restoreGenerated` хранят ID в неограниченном `Set`;
@@ -103,5 +114,5 @@ python3 tools/export_profile.py
 
 - `42/` — B42-пакет `PersonalWorldGen`;
 - `tools/build_mod.py` собирает `42/media/java/client/PersonalWorldGen.jar`;
-- Java-ядро 1.18.5: чистый planNear, полный settlement возле игрока, реестр 256 ID, дороги с обходом и protected, детерминированные
+- Java-ядро 1.18.6: writes=off по умолчанию, бюджет записи, чистый planNear, полный settlement, реестр 256 ID, дороги с обходом/protected
   планы, каталог 1.17; `worldWrites=0` без явного тестового вызова.

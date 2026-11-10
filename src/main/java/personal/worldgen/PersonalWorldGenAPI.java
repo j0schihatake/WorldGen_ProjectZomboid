@@ -6,8 +6,11 @@ import java.util.concurrent.Executors;
 /** Read-only game-facing entry point. Plans data; never writes to the world yet. */
 @me.zed_0xff.zombie_buddy.Exposer.LuaClass
 public final class PersonalWorldGenAPI {
-    public static final String VERSION = "1.18.5";
+    public static final String VERSION = "1.18.6";
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
+
+    private volatile boolean writesEnabled = false;
+    private volatile int writeBudget = 256;
 
     private PersonalWorldGenAPI() {}
 
@@ -17,15 +20,28 @@ public final class PersonalWorldGenAPI {
         try (var input = PersonalWorldGenAPI.class.getResourceAsStream("/personal/worldgen/profile.tsv")) {
             var profile = MapProfileIO.read(input);
             return "core=" + VERSION + " profileCells=" + profile.cells().size()
-                    + " profileVersion=" + profile.gameVersion() + " worldWrites=0 mode=planning";
+                    + " profileVersion=" + profile.gameVersion()
+                    + " writes=" + (writesEnabled ? "on" : "off")
+                    + " writeBudget=" + writeBudget + " worldWrites=0 mode=planning";
         } catch (Exception error) {
-            return "core=" + VERSION + " profile=missing worldWrites=0 mode=planning";
+            return "core=" + VERSION + " profile=missing writes=off worldWrites=0 mode=planning";
         }
     }
+
+    public String worldgenSettings() {
+        return "writes=" + (writesEnabled ? "on" : "off") + " writeBudget=" + writeBudget;
+    }
+
+    public void setWritesEnabled(boolean enabled) { writesEnabled = enabled; }
+
+    public void setWriteBudget(int value) { writeBudget = Math.max(1, Math.min(512, value)); }
+
+    private String writesDisabled() { return "writes-disabled writes=off worldWrites=0"; }
 
     /** Plans a camp near the player using only the position; no world writes. */
     /** First controlled write: one world item on the player's square. */
     public String placeMarker(Object player) {
+        if (!writesEnabled) return writesDisabled();
         if (player == null) return "no-player";
         try {
             Object square = player.getClass().getMethod("getCurrentSquare").invoke(player);
@@ -41,6 +57,7 @@ public final class PersonalWorldGenAPI {
 
     /** Places a bounded camp plan into the test world as item markers. */
     public String placeCamp(Object player) {
+        if (!writesEnabled) return writesDisabled();
         if (player == null) return "no-player";
         try {
             Object square = player.getClass().getMethod("getCurrentSquare").invoke(player);
@@ -73,6 +90,7 @@ public final class PersonalWorldGenAPI {
 
     /** Places a bounded road marker set into the test world. */
     public String placeRoad(Object player) {
+        if (!writesEnabled) return writesDisabled();
         if (player == null) return "no-player";
         try {
             var points = RoadPlanner.connect(new Site(0, 0, 32, 32), new Site(64, 0, 32, 32));
@@ -100,6 +118,7 @@ public final class PersonalWorldGenAPI {
 
     /** Places real wall objects from the building plan, bounded to 32. */
     public String placeRealBuilding(Object player) {
+        if (!writesEnabled) return writesDisabled();
         if (player == null) return "no-player";
         try {
             var plan = BuildingPlanner.plan(new Site(0, 0, 48, 40), VERSION, 42, 3);
@@ -138,6 +157,7 @@ public final class PersonalWorldGenAPI {
 
     /** Places real street-floor objects along the planned road. */
     public String placeRealRoad(Object player) {
+        if (!writesEnabled) return writesDisabled();
         if (player == null) return "no-player";
         try {
             var points = RoadPlanner.connect(new Site(0, 0, 32, 32), new Site(64, 0, 32, 32));
@@ -164,6 +184,7 @@ public final class PersonalWorldGenAPI {
 
     /** Places real camp props from the camp plan. */
     public String placeRealCamp(Object player) {
+        if (!writesEnabled) return writesDisabled();
         if (player == null) return "no-player";
         try {
             var plan = CampPlanner.plan(new Site(0, 0, 32, 32), VERSION, 42, 8);
@@ -195,6 +216,7 @@ public final class PersonalWorldGenAPI {
 
     /** Places a bounded building marker set into the test world. */
     public String placeBuilding(Object player) {
+        if (!writesEnabled) return writesDisabled();
         if (player == null) return "no-player";
         try {
             var plan = BuildingPlanner.plan(new Site(0, 0, 48, 40), VERSION, 42, 3);
@@ -358,6 +380,7 @@ public final class PersonalWorldGenAPI {
 
     /** Generates one named region exactly once in this process. */
     public String generateStart(Object player) {
+        if (!writesEnabled) return writesDisabled();
         if (player == null) return "no-player";
         synchronized (generated) {
             if (!generated.remember("start-site")) return "already-generated start-site";
@@ -370,6 +393,7 @@ public final class PersonalWorldGenAPI {
     }
 
     public String generateOnce(Object player, String id) {
+        if (!writesEnabled) return writesDisabled();
         if (id == null || id.isBlank()) return "no-id";
         synchronized (generated) {
             if (!generated.remember(id)) return "already-generated " + id;
@@ -388,6 +412,7 @@ public final class PersonalWorldGenAPI {
 
     /** One bounded test-site pipeline: camp, road and building markers. */
     public String generateTestSite(Object player) {
+        if (!writesEnabled) return writesDisabled();
         String camp = placeCamp(player);
         String road = placeRoad(player);
         String building = placeBuilding(player);
@@ -411,6 +436,7 @@ public final class PersonalWorldGenAPI {
 
     /** Places a short line of real wall objects in the test world. */
     public String placeRealWall(Object player) {
+        if (!writesEnabled) return writesDisabled();
         if (player == null) return "no-player";
         try {
             Object cell = player.getClass().getMethod("getCell").invoke(player);

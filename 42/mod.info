@@ -1,6 +1,6 @@
 name=Personal WorldGen — собственный генератор
 id=PersonalWorldGen
-modversion=1.18.5
+modversion=1.18.6
 versionMin=42.21
 versionMax=42.22
 require=\ZombieBuddy
