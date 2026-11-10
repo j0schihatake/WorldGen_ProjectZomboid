@@ -47,7 +47,8 @@ python3 tools/export_profile.py
 - Критерии: повторный `generateOnce` не генерирует; `restoreGenerated` не создаёт
   дубликаты; старые ID вытесняются; `generatedRegions` остаётся CSV.
 - Статус: подтверждено в игре 11.11.2026. JAR 1.18.1, `Java core 1.18.1 loaded`;
-  `PASS worldgen-registry` в общем прогоне PersonalKnox `112/0`, exit code 0.
+  `PASS worldgen-registry` и `PASS worldgen-plan` в прогоне PersonalKnox `113/0`,
+  exit code 0 (`campOps=8 worldWrites=0`).
 
 ## PWG-06.2 — CSV-сериализация реестра регионов
 
