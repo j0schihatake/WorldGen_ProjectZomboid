@@ -401,6 +401,14 @@ public final class PersonalWorldGenAPI {
     public String generateStart(Object player) {
         if (!writesEnabled) return writesDisabled();
         if (player == null) return "no-player";
+        try {
+            int px = ((Number) player.getClass().getMethod("getXi").invoke(player)).intValue();
+            int py = ((Number) player.getClass().getMethod("getYi").invoke(player)).intValue();
+            var guard = new ProtectedCells(256, profile());
+            if (!guard.allows(px, py, 32, 32, 0)) return "protected-start worldWrites=0";
+        } catch (ReflectiveOperationException | java.io.IOException error) {
+            return "start-guard-error=" + error.getClass().getSimpleName() + " worldWrites=0";
+        }
         synchronized (generated) {
             if (!generated.remember("start-site")) return "already-generated start-site";
         }
