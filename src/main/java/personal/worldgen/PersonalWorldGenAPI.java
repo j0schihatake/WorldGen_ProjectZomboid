@@ -23,7 +23,8 @@ public final class PersonalWorldGenAPI {
             return "core=" + VERSION + " profileCells=" + profile.cells().size()
                     + " profileVersion=" + profile.gameVersion()
                     + " writes=" + (writesEnabled ? "on" : "off")
-                    + " writeBudget=" + writeBudget.limit() + " worldWrites=0 mode=planning";
+                    + " writeBudget=" + writeBudget.limit() + " writeBudgetUsed=" + writeBudget.used()
+                    + " worldWrites=0 mode=planning";
         } catch (Exception error) {
             return "core=" + VERSION + " profile=missing writes=off worldWrites=0 mode=planning";
         }
@@ -31,12 +32,13 @@ public final class PersonalWorldGenAPI {
 
     public String worldgenSettings() {
         return "writes=" + (writesEnabled ? "on" : "off") + " writeBudget=" + writeBudget.limit()
-                + " used=" + writeBudget.used();
+                + " used=" + writeBudget.used() + " remaining=" + writeBudget.remaining();
     }
 
     public void setWritesEnabled(boolean enabled) { writesEnabled = enabled; }
 
     public void setWriteBudget(int value) { writeBudget.setLimit(value); }
+    public void resetWriteBudget() { writeBudget.reset(); }
 
     private String writesDisabled() { return "writes-disabled writes=off worldWrites=0"; }
 
@@ -53,7 +55,8 @@ public final class PersonalWorldGenAPI {
             Object item = square.getClass().getMethod("AddWorldInventoryItem",
                             String.class, float.class, float.class, float.class)
                     .invoke(square, "Base.Hammer", 0.5f, 0.5f, 0f);
-            return item != null ? "marker=placed worldWrites=1" : "marker=failed worldWrites=0";
+            return item != null ? "marker=placed worldWrites=1 used=" + writeBudget.used()
+                    : "marker=failed worldWrites=0";
         } catch (Throwable error) {
             return "marker-error=" + error.getClass().getSimpleName() + " worldWrites=0";
         }
@@ -409,7 +412,8 @@ public final class PersonalWorldGenAPI {
             String building = placeRealBuilding(player);
             String wall = placeRealWall(player);
             return "start camp=" + camp + " road=" + road + " building=" + building + " wall=" + wall
-                    + " budget=" + writeBudget.limit() + " used=" + writeBudget.used();
+                    + " budget=" + writeBudget.limit() + " used=" + writeBudget.used()
+                    + " remaining=" + writeBudget.remaining();
         } finally {
             batchWrite = false;
         }

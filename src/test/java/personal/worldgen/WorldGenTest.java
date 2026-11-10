@@ -322,6 +322,9 @@ public final class WorldGenTest {
         assert budget.used() == 2 && budget.remaining() == 0;
         budget.reset();
         assert budget.take();
+        assert budget.remaining() == 1;
+        budget.reset();
+        assert budget.remaining() == 2;
         budget.setLimit(0);
         assert budget.limit() == 1;
         var api = PersonalWorldGenAPI.getInstance();
