@@ -46,10 +46,8 @@ python3 tools/export_profile.py
   дедупликацию и вытеснение старых ID; добавить unit-тесты реестра.
 - Критерии: повторный `generateOnce` не генерирует; `restoreGenerated` не создаёт
   дубликаты; старые ID вытесняются; `generatedRegions` остаётся CSV.
-- Статус: реализовано, unit-тесты PASS, JAR 1.18.0. В игре подтверждена загрузка
-  `[PersonalWorldGen] Java core 1.18.0 loaded`; сценарий `worldgen-registry`
-  не выполнен, потому что игра завершилась на `bWaitForAssetLoadingToFinish2`
-  с `[Viewpoint] video memory: ... 106 MiB of 8192 free`.
+- Статус: подтверждено в игре 11.11.2026. JAR 1.18.1, `Java core 1.18.1 loaded`;
+  `PASS worldgen-registry` в общем прогоне PersonalKnox `112/0`, exit code 0.
 
 ## PWG-06.2 — CSV-сериализация реестра регионов
 
@@ -58,7 +56,7 @@ python3 tools/export_profile.py
   проверку лимита при импорте.
 - Реализация: `RegionRegistry.csv()` и `restoreCsv()`; API использует их.
 - Критерии: round-trip, trim, дубликаты, лимит 256, пустой CSV.
-- Статус: реализовано и покрыто unit-тестами (`RegionRegistryTest`).
+- Статус: реализовано, unit-тесты PASS; проверка `worldgen-registry` PASS в игре.
 
 ## Игровой пакет
 
