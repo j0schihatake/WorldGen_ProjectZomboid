@@ -317,6 +317,13 @@ public final class WorldGenTest {
         try { SettlementPlanner.planValidated(new Site(0, 0, 64, 64), new Site(80, 0, 64, 64),
                 new Site(500, 500, 32, 32), "0.1.0", 7, roadGuard, 0); throw new AssertionError("Protected road accepted"); }
         catch (IllegalArgumentException expected) { }
+        var budget = new WriteBudget(2);
+        assert budget.take() && budget.take() && !budget.take();
+        assert budget.used() == 2 && budget.remaining() == 0;
+        budget.reset();
+        assert budget.take();
+        budget.setLimit(0);
+        assert budget.limit() == 1;
         var api = PersonalWorldGenAPI.getInstance();
         assert api.status().contains("writes=off") : "WorldGen writes must default to off";
         assert api.worldgenSettings().contains("writes=off");

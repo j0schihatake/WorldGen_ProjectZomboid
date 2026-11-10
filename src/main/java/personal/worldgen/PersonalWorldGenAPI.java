@@ -10,7 +10,8 @@ public final class PersonalWorldGenAPI {
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
 
     private volatile boolean writesEnabled = false;
-    private volatile int writeBudget = 256;
+    private final WriteBudget writeBudget = new WriteBudget(256);
+    private volatile boolean batchWrite = false;
 
     private PersonalWorldGenAPI() {}
 
@@ -22,19 +23,20 @@ public final class PersonalWorldGenAPI {
             return "core=" + VERSION + " profileCells=" + profile.cells().size()
                     + " profileVersion=" + profile.gameVersion()
                     + " writes=" + (writesEnabled ? "on" : "off")
-                    + " writeBudget=" + writeBudget + " worldWrites=0 mode=planning";
+                    + " writeBudget=" + writeBudget.limit() + " worldWrites=0 mode=planning";
         } catch (Exception error) {
             return "core=" + VERSION + " profile=missing writes=off worldWrites=0 mode=planning";
         }
     }
 
     public String worldgenSettings() {
-        return "writes=" + (writesEnabled ? "on" : "off") + " writeBudget=" + writeBudget;
+        return "writes=" + (writesEnabled ? "on" : "off") + " writeBudget=" + writeBudget.limit()
+                + " used=" + writeBudget.used();
     }
 
     public void setWritesEnabled(boolean enabled) { writesEnabled = enabled; }
 
-    public void setWriteBudget(int value) { writeBudget = Math.max(1, Math.min(512, value)); }
+    public void setWriteBudget(int value) { writeBudget.setLimit(value); }
 
     private String writesDisabled() { return "writes-disabled writes=off worldWrites=0"; }
 
@@ -42,10 +44,12 @@ public final class PersonalWorldGenAPI {
     /** First controlled write: one world item on the player's square. */
     public String placeMarker(Object player) {
         if (!writesEnabled) return writesDisabled();
+        if (!batchWrite) writeBudget.reset();
         if (player == null) return "no-player";
         try {
             Object square = player.getClass().getMethod("getCurrentSquare").invoke(player);
             if (square == null) return "no-square";
+            if (!writeBudget.take()) return "marker-budget worldWrites=0";
             Object item = square.getClass().getMethod("AddWorldInventoryItem",
                             String.class, float.class, float.class, float.class)
                     .invoke(square, "Base.Hammer", 0.5f, 0.5f, 0f);
@@ -58,6 +62,7 @@ public final class PersonalWorldGenAPI {
     /** Places a bounded camp plan into the test world as item markers. */
     public String placeCamp(Object player) {
         if (!writesEnabled) return writesDisabled();
+        if (!batchWrite) writeBudget.reset();
         if (player == null) return "no-player";
         try {
             Object square = player.getClass().getMethod("getCurrentSquare").invoke(player);
@@ -66,6 +71,7 @@ public final class PersonalWorldGenAPI {
             Object cell = player.getClass().getMethod("getCell").invoke(player);
             int placed = 0;
             for (var step : plan.steps()) {
+                if (!writeBudget.take()) break;
                 String item = switch (step.kind()) {
                     case "tent" -> "Base.CampingTentKit2";
                     default -> "Base.Hammer";
@@ -91,6 +97,7 @@ public final class PersonalWorldGenAPI {
     /** Places a bounded road marker set into the test world. */
     public String placeRoad(Object player) {
         if (!writesEnabled) return writesDisabled();
+        if (!batchWrite) writeBudget.reset();
         if (player == null) return "no-player";
         try {
             var points = RoadPlanner.connect(new Site(0, 0, 32, 32), new Site(64, 0, 32, 32));
@@ -100,6 +107,7 @@ public final class PersonalWorldGenAPI {
             int bz = ((Number) player.getClass().getMethod("getZi").invoke(player)).intValue();
             int placed = 0;
             for (int i = 0; i < points.size(); i += 4) {
+                if (!writeBudget.take()) break;
                 var point = points.get(i);
                 try {
                     Object target = cell.getClass().getMethod("getGridSquare", int.class, int.class, int.class)
@@ -119,6 +127,7 @@ public final class PersonalWorldGenAPI {
     /** Places real wall objects from the building plan, bounded to 32. */
     public String placeRealBuilding(Object player) {
         if (!writesEnabled) return writesDisabled();
+        if (!batchWrite) writeBudget.reset();
         if (player == null) return "no-player";
         try {
             var plan = BuildingPlanner.plan(new Site(0, 0, 48, 40), VERSION, 42, 3);
@@ -130,6 +139,7 @@ public final class PersonalWorldGenAPI {
             int bz = ((Number) player.getClass().getMethod("getZi").invoke(player)).intValue();
             int walls = 0, floors = 0, doors = 0;
             for (var step : plan.steps()) {
+                if (!writeBudget.take()) break;
                 if ("wall".equals(step.kind()) && walls >= 32) continue;
                 if ("floor".equals(step.kind()) && floors >= 24) continue;
                 if ("door".equals(step.kind()) && doors >= 8) continue;
@@ -158,6 +168,7 @@ public final class PersonalWorldGenAPI {
     /** Places real street-floor objects along the planned road. */
     public String placeRealRoad(Object player) {
         if (!writesEnabled) return writesDisabled();
+        if (!batchWrite) writeBudget.reset();
         if (player == null) return "no-player";
         try {
             var points = RoadPlanner.connect(new Site(0, 0, 32, 32), new Site(64, 0, 32, 32));
@@ -169,6 +180,7 @@ public final class PersonalWorldGenAPI {
             int bz = ((Number) player.getClass().getMethod("getZi").invoke(player)).intValue();
             int placed = 0;
             for (int i = 0; i < points.size(); i += 4) {
+                if (!writeBudget.take()) break;
                 var point = points.get(i);
                 Object target = cell.getClass().getMethod("getGridSquare", int.class, int.class, int.class)
                         .invoke(cell, bx + point.x(), by + point.y(), bz);
@@ -185,6 +197,7 @@ public final class PersonalWorldGenAPI {
     /** Places real camp props from the camp plan. */
     public String placeRealCamp(Object player) {
         if (!writesEnabled) return writesDisabled();
+        if (!batchWrite) writeBudget.reset();
         if (player == null) return "no-player";
         try {
             var plan = CampPlanner.plan(new Site(0, 0, 32, 32), VERSION, 42, 8);
@@ -196,6 +209,7 @@ public final class PersonalWorldGenAPI {
             int bz = ((Number) player.getClass().getMethod("getZi").invoke(player)).intValue();
             int placed = 0;
             for (var step : plan.steps()) {
+                if (!writeBudget.take()) break;
                 String sprite = switch (step.kind()) {
                     case "tent" -> "tent_01_0";
                     case "campfire" -> "camping_01_0";
@@ -217,6 +231,7 @@ public final class PersonalWorldGenAPI {
     /** Places a bounded building marker set into the test world. */
     public String placeBuilding(Object player) {
         if (!writesEnabled) return writesDisabled();
+        if (!batchWrite) writeBudget.reset();
         if (player == null) return "no-player";
         try {
             var plan = BuildingPlanner.plan(new Site(0, 0, 48, 40), VERSION, 42, 3);
@@ -226,6 +241,7 @@ public final class PersonalWorldGenAPI {
             int bz = ((Number) player.getClass().getMethod("getZi").invoke(player)).intValue();
             int placed = 0;
             for (var step : plan.steps()) {
+                if (!writeBudget.take()) break;
                 if (placed >= 24) break;
                 try {
                     Object target = cell.getClass().getMethod("getGridSquare", int.class, int.class, int.class)
@@ -385,11 +401,18 @@ public final class PersonalWorldGenAPI {
         synchronized (generated) {
             if (!generated.remember("start-site")) return "already-generated start-site";
         }
-        String camp = placeRealCamp(player);
-        String road = placeRealRoad(player);
-        String building = placeRealBuilding(player);
-        String wall = placeRealWall(player);
-        return "start camp=" + camp + " road=" + road + " building=" + building + " wall=" + wall;
+        writeBudget.reset();
+        batchWrite = true;
+        try {
+            String camp = placeRealCamp(player);
+            String road = placeRealRoad(player);
+            String building = placeRealBuilding(player);
+            String wall = placeRealWall(player);
+            return "start camp=" + camp + " road=" + road + " building=" + building + " wall=" + wall
+                    + " budget=" + writeBudget.limit() + " used=" + writeBudget.used();
+        } finally {
+            batchWrite = false;
+        }
     }
 
     public String generateOnce(Object player, String id) {
@@ -398,8 +421,15 @@ public final class PersonalWorldGenAPI {
         synchronized (generated) {
             if (!generated.remember(id)) return "already-generated " + id;
         }
-        String camp = placeCamp(player);
-        return "generated " + id + " " + camp;
+        writeBudget.reset();
+        batchWrite = true;
+        try {
+            String camp = placeCamp(player);
+            return "generated " + id + " " + camp
+                    + " budget=" + writeBudget.limit() + " used=" + writeBudget.used();
+        } finally {
+            batchWrite = false;
+        }
     }
 
     public String generatedRegions() {
@@ -413,14 +443,21 @@ public final class PersonalWorldGenAPI {
     /** One bounded test-site pipeline: camp, road and building markers. */
     public String generateTestSite(Object player) {
         if (!writesEnabled) return writesDisabled();
-        String camp = placeCamp(player);
-        String road = placeRoad(player);
-        String building = placeBuilding(player);
-        int campCount = countPlaced(camp);
-        int roadCount = countPlaced(road);
-        int buildingCount = countPlaced(building);
-        return "camp=" + campCount + " road=" + roadCount + " building=" + buildingCount
-                + " worldWrites=" + (campCount + roadCount + buildingCount);
+        writeBudget.reset();
+        batchWrite = true;
+        try {
+            String camp = placeCamp(player);
+            String road = placeRoad(player);
+            String building = placeBuilding(player);
+            int campCount = countPlaced(camp);
+            int roadCount = countPlaced(road);
+            int buildingCount = countPlaced(building);
+            return "camp=" + campCount + " road=" + roadCount + " building=" + buildingCount
+                    + " worldWrites=" + (campCount + roadCount + buildingCount)
+                    + " budget=" + writeBudget.limit() + " used=" + writeBudget.used();
+        } finally {
+            batchWrite = false;
+        }
     }
 
     private static int countPlaced(String value) {
@@ -437,6 +474,7 @@ public final class PersonalWorldGenAPI {
     /** Places a short line of real wall objects in the test world. */
     public String placeRealWall(Object player) {
         if (!writesEnabled) return writesDisabled();
+        if (!batchWrite) writeBudget.reset();
         if (player == null) return "no-player";
         try {
             Object cell = player.getClass().getMethod("getCell").invoke(player);

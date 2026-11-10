@@ -46,6 +46,9 @@ python3 tools/export_profile.py
   возвращают `writes-disabled writes=off worldWrites=0`.
 - Критерии: unit-тесты `writes=off`, явное включение, игровой тест только
   в disposable dev-копии.
+- Реализация бюджета: `WriteBudget` (limit 1–512), `generateTestSite`
+  возвращает `budget=… used=…`; `generateStart/generateOnce` используют общий
+  бюджет. Unit-тест PASS; игровой тест после guard ещё не выполнен.
 - Статус: unit PASS; игровой тест после guard ещё не выполнен.
 
 ## PWG-06.1 — ограниченный реестр сгенерированных регионов
