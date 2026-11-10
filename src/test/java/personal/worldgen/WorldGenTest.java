@@ -229,6 +229,28 @@ public final class WorldGenTest {
         assert roadCells.size() == road.size() : "No duplicate road points";
         var single = RoadPlanner.connect(new Site(0, 0, 32, 32), new Site(0, 0, 32, 32));
         assert single.size() == 1 : "Same site needs one point";
+        var roadFrom = new Site(0, 0, 32, 32);
+        var roadTo = new Site(96, 96, 32, 32);
+        var clearRoad = RoadPlanner.connectAvoiding(roadFrom, roadTo, java.util.Set.of());
+        assert clearRoad.equals(RoadPlanner.connect(roadFrom, roadTo)) : "Empty block set keeps the direct road";
+        var obstacle = new java.util.HashSet<RoadPlanner.Point>();
+        obstacle.add(new RoadPlanner.Point(17, 16));
+        var detour = RoadPlanner.connectAvoiding(roadFrom, roadTo, obstacle);
+        assert !detour.isEmpty() : "A detour must exist around one blocked cell";
+        assert detour.get(detour.size() - 1).equals(new RoadPlanner.Point(112, 112));
+        for (int i = 0; i < detour.size(); i++) {
+            assert !obstacle.contains(detour.get(i)) : "Detour must not enter blocked cells";
+            if (i > 0) {
+                var a = detour.get(i - 1);
+                var b = detour.get(i);
+                assert Math.abs(a.x() - b.x()) + Math.abs(a.y() - b.y()) == 1 : "Detour must stay connected";
+            }
+        }
+        var trapped = java.util.Set.of(new RoadPlanner.Point(17, 16), new RoadPlanner.Point(15, 16),
+                new RoadPlanner.Point(16, 17), new RoadPlanner.Point(16, 15));
+        assert RoadPlanner.connectAvoiding(roadFrom, roadTo, trapped).isEmpty() : "Boxed-in site has no route";
+        try { RoadPlanner.connectAvoiding(roadFrom, roadTo, null); throw new AssertionError("Null blocked set accepted"); }
+        catch (IllegalArgumentException expected) { }
         try { RoadPlanner.connect(null, new Site(0, 0, 1, 1)); throw new AssertionError("Null site accepted"); }
         catch (IllegalArgumentException expected) { }
         try { RoadPlanner.connect(new Site(0, 0, 1, 1), new Site(100000, 0, 1, 1)); throw new AssertionError("Long road accepted"); }
@@ -292,6 +314,6 @@ public final class WorldGenTest {
                 new Site(180, 100, 32, 32), "0.1.0", 7, settlementBlockedGuard, 0); throw new AssertionError("Protected settlement accepted"); }
         catch (IllegalArgumentException expected) { }
         personal.worldgen.PlanFileTest.run();
-        System.out.println("World-generation tests passed: site bounds, deterministic search, protected cells, reservations, budget queue, pause, map profiles, time budget, plan commit and the 1.17 pattern catalog and bounded region registry.");
+        System.out.println("World-generation tests passed: site bounds, deterministic search, protected cells, reservations, budget queue, pause, map profiles, time budget, plan commit and the 1.17 pattern catalog and bounded region registry and obstacle-aware roads.");
     }
 }
