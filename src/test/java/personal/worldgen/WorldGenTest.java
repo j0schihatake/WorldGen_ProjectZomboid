@@ -12,6 +12,7 @@ public final class WorldGenTest {
     public static void main(String[] args) throws Exception {
         ProtectedCellsTest.main(args);
         StructurePatternsTest.main(args);
+        RegionRegistryTest.main(args);
 
         try { new Site(0, 0, 0, 1); throw new AssertionError("Zero width accepted"); }
         catch (IllegalArgumentException expected) { }
@@ -291,6 +292,6 @@ public final class WorldGenTest {
                 new Site(180, 100, 32, 32), "0.1.0", 7, settlementBlockedGuard, 0); throw new AssertionError("Protected settlement accepted"); }
         catch (IllegalArgumentException expected) { }
         personal.worldgen.PlanFileTest.run();
-        System.out.println("World-generation tests passed: site bounds, deterministic search, protected cells, reservations, budget queue, pause, map profiles, time budget, plan commit and the 1.17 pattern catalog.");
+        System.out.println("World-generation tests passed: site bounds, deterministic search, protected cells, reservations, budget queue, pause, map profiles, time budget, plan commit and the 1.17 pattern catalog and bounded region registry.");
     }
 }

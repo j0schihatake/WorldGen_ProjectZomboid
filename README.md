@@ -46,10 +46,12 @@ python3 tools/export_profile.py
   дедупликацию и вытеснение старых ID; добавить unit-тесты реестра.
 - Критерии: повторный `generateOnce` не генерирует; `restoreGenerated` не создаёт
   дубликаты; старые ID вытесняются; `generatedRegions` остаётся CSV.
-- Статус: в работе.
+- Статус: реализовано и покрыто unit-тестами; игровая проверка реестра — отдельной
+  проверкой `worldgen-registry`.
 
 ## Игровой пакет
 
 - `42/` — B42-пакет `PersonalWorldGen`;
 - `tools/build_mod.py` собирает `42/media/java/client/PersonalWorldGen.jar`;
-- Java-ядро 0.1.0 только планирует данные, `worldWrites=0`.
+- Java-ядро 1.18.0: ограниченный реестр регионов (256 ID), детерминированные
+  планы, каталог 1.17; `worldWrites=0` без явного тестового вызова.
