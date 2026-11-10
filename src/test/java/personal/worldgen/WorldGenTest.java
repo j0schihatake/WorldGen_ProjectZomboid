@@ -313,6 +313,10 @@ public final class WorldGenTest {
         try { SettlementPlanner.planValidated(new Site(0, 0, 64, 64), new Site(80, 0, 64, 64),
                 new Site(180, 100, 32, 32), "0.1.0", 7, settlementBlockedGuard, 0); throw new AssertionError("Protected settlement accepted"); }
         catch (IllegalArgumentException expected) { }
+        var roadGuard = new ProtectedCells(256, java.util.Set.of(new ProtectedCells.Cell(1, 0)));
+        try { SettlementPlanner.planValidated(new Site(0, 0, 64, 64), new Site(80, 0, 64, 64),
+                new Site(500, 500, 32, 32), "0.1.0", 7, roadGuard, 0); throw new AssertionError("Protected road accepted"); }
+        catch (IllegalArgumentException expected) { }
         personal.worldgen.PlanFileTest.run();
         System.out.println("World-generation tests passed: site bounds, deterministic search, protected cells, reservations, budget queue, pause, map profiles, time budget, plan commit and the 1.17 pattern catalog and bounded region registry and obstacle-aware roads.");
     }

@@ -35,6 +35,12 @@ public final class SettlementPlanner {
         var settlement = plan(campSite, buildingSite, roadTarget, version, seed);
         var issues = new ArrayList<>(PlanValidator.validate(settlement.camp(), guard, padding));
         issues.addAll(PlanValidator.validate(settlement.building().asSitePlan(version), guard, padding));
+        for (var point : settlement.road()) {
+            if (!guard.allows(point.x(), point.y(), 1, 1, padding)) {
+                issues.add(new PlanValidator.Issue(-1, "protected_road@" + point.x() + "," + point.y()));
+                break;
+            }
+        }
         if (!issues.isEmpty()) throw new IllegalArgumentException("Protected settlement: " + issues);
         return settlement;
     }
