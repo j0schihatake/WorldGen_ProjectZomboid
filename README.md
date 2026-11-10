@@ -49,7 +49,8 @@ python3 tools/export_profile.py
 - Реализация бюджета: `WriteBudget` (limit 1–512), `generateTestSite`
   возвращает `budget=… used=…`; `generateStart/generateOnce` используют общий
   бюджет. Unit-тест PASS; игровой тест после guard ещё не выполнен.
-- Статус: unit PASS; игровой тест после guard ещё не выполнен.
+- Статус: подтверждено в игре 1.18.6: `writes=off`, тест с бюджетом 8 дал
+  `worldWrites=8 budget=8 used=8`, 115/0, status=OK.
 
 ## PWG-06.1 — ограниченный реестр сгенерированных регионов
 
