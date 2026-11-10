@@ -6,7 +6,7 @@ import java.util.concurrent.Executors;
 /** Read-only game-facing entry point. Plans data; never writes to the world yet. */
 @me.zed_0xff.zombie_buddy.Exposer.LuaClass
 public final class PersonalWorldGenAPI {
-    public static final String VERSION = "1.18.3";
+    public static final String VERSION = "1.18.4";
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
 
     private PersonalWorldGenAPI() {}
@@ -461,11 +461,24 @@ public final class PersonalWorldGenAPI {
             int x = (int) px + 10;
             int y = (int) py + 10;
             var guard = new ProtectedCells(256, profile());
-            if (!guard.allows(x, y, 32, 32, 0)) {
+            var campSite = new Site(x, y, 32, 32);
+            var buildingSite = new Site(x + 40, y, 48, 40);
+            var roadTarget = new Site(x + 120, y, 16, 16);
+            if (!guard.allows(campSite.x(), campSite.y(), campSite.width(), campSite.height(), 0)
+                    || !guard.allows(buildingSite.x(), buildingSite.y(), buildingSite.width(), buildingSite.height(), 0)) {
                 return "x=" + x + " y=" + y + " protected=true worldWrites=0";
             }
-            var plan = CampPlanner.plan(new Site(x, y, 32, 32), VERSION, seed, 8);
-            return "x=" + x + " y=" + y + " campOps=" + plan.operations() + " protected=false worldWrites=0";
+            SettlementPlanner.Settlement settlement;
+            try {
+                settlement = SettlementPlanner.planValidated(campSite, buildingSite, roadTarget,
+                        VERSION, seed, guard, 0);
+            } catch (IllegalArgumentException protectedPlan) {
+                return "x=" + x + " y=" + y + " protected=true worldWrites=0";
+            }
+            return "x=" + x + " y=" + y + " campOps=" + settlement.camp().operations()
+                    + " buildingOps=" + settlement.building().steps().size()
+                    + " roadPoints=" + settlement.road().size()
+                    + " protected=false worldWrites=0";
         } catch (ReflectiveOperationException | java.io.IOException error) {
             return "player-probe-failed=" + error.getClass().getSimpleName();
         }

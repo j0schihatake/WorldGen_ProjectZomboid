@@ -68,6 +68,15 @@ python3 tools/export_profile.py
 - Критерии: дорога через protected-клетку отклоняется, тест покрывает случай.
 - Статус: реализовано, unit-тесты PASS; в игре 1.18.3 ещё не проверялось.
 
+## PWG-06.4 — planNearPlayer планирует весь settlement
+
+- Причина: `planNearPlayer` возвращал только `campOps`, хотя PWG-06 требует
+  профиль → участки → дороги → здания → проверку.
+- Реализация: camp + building + дорога через `SettlementPlanner.planValidated`;
+  вывод содержит `campOps`, `buildingOps`, `roadPoints` и `worldWrites=0`.
+- Критерии: при свободном месте — все три компонента; при protected — отказ.
+- Статус: реализовано, unit-тесты PASS; в игре 1.18.4 ещё не проверялось.
+
 ## PWG-04.1 — дорога с обходом препятствий
 
 - Причина: `RoadPlanner.connect` строит только L-маршрут и не учитывает
@@ -83,5 +92,5 @@ python3 tools/export_profile.py
 
 - `42/` — B42-пакет `PersonalWorldGen`;
 - `tools/build_mod.py` собирает `42/media/java/client/PersonalWorldGen.jar`;
-- Java-ядро 1.18.3: ограниченный реестр регионов (256 ID, CSV round-trip), дороги с обходом препятствий и проверкой protected-клеток, детерминированные
+- Java-ядро 1.18.4: полный settlement в planNearPlayer, реестр 256 ID, дороги с обходом и проверкой protected, детерминированные
   планы, каталог 1.17; `worldWrites=0` без явного тестового вызова.
