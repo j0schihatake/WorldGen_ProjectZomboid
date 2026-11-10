@@ -46,8 +46,10 @@ python3 tools/export_profile.py
   дедупликацию и вытеснение старых ID; добавить unit-тесты реестра.
 - Критерии: повторный `generateOnce` не генерирует; `restoreGenerated` не создаёт
   дубликаты; старые ID вытесняются; `generatedRegions` остаётся CSV.
-- Статус: реализовано и покрыто unit-тестами; игровая проверка реестра — отдельной
-  проверкой `worldgen-registry`.
+- Статус: реализовано, unit-тесты PASS, JAR 1.18.0. В игре подтверждена загрузка
+  `[PersonalWorldGen] Java core 1.18.0 loaded`; сценарий `worldgen-registry`
+  не выполнен, потому что игра завершилась на `bWaitForAssetLoadingToFinish2`
+  с `[Viewpoint] video memory: ... 106 MiB of 8192 free`.
 
 ## Игровой пакет
 
