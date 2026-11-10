@@ -4,7 +4,7 @@ import subprocess
 import os
 
 root = Path(__file__).resolve().parents[1]
-classes = root / 'build/classes'
+classes = root / 'build-new/classes'
 classes.mkdir(parents=True, exist_ok=True)
 sources = sorted((root / 'src').rglob('*.java'))
 cp = os.environ.get('ZOMBIE_BUDDY_JAR', '/home/j0schi/SteamLibrary/steamapps/common/ProjectZomboid/projectzomboid/ZombieBuddy.jar')

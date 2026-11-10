@@ -489,6 +489,7 @@ public final class PersonalWorldGenAPI {
             int bz = ((Number) player.getClass().getMethod("getZi").invoke(player)).intValue();
             int placed = 0;
             for (int i = 0; i < 4; i++) {
+                if (!writeBudget.take()) break;
                 Object target = cell.getClass().getMethod("getGridSquare", int.class, int.class, int.class)
                         .invoke(cell, bx + 3 + i, by + 3, bz);
                 if (target == null) continue;

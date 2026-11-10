@@ -7,13 +7,13 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-CLASSES = ROOT / "build" / "mod-classes"
+CLASSES = ROOT / "build-new" / "mod-classes"
 OUT = ROOT / "42" / "media" / "java" / "client" / "PersonalWorldGen.jar"
 
 
 def main() -> None:
     shutil.rmtree(CLASSES, ignore_errors=True)
-    CLASSES.mkdir(parents=True)
+    CLASSES.mkdir(parents=True, exist_ok=True)
     sources = sorted((ROOT / "src" / "main" / "java").rglob("*.java"))
     cp = os.environ.get("ZOMBIE_BUDDY_JAR",
         "/home/j0schi/SteamLibrary/steamapps/common/ProjectZomboid/projectzomboid/ZombieBuddy.jar")
