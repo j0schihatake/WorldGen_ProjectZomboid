@@ -12,6 +12,8 @@ public final class PersonalWorldGenAPI {
     private volatile boolean writesEnabled = false;
     private final WriteBudget writeBudget = new WriteBudget(256);
     private volatile boolean batchWrite = false;
+    private volatile int protectedPadding = 0;
+    private volatile long worldSeed = 42L;
 
     private PersonalWorldGenAPI() {}
 
@@ -24,6 +26,7 @@ public final class PersonalWorldGenAPI {
                     + " profileVersion=" + profile.gameVersion()
                     + " writes=" + (writesEnabled ? "on" : "off")
                     + " writeBudget=" + writeBudget.limit() + " writeBudgetUsed=" + writeBudget.used()
+                    + " protectedPadding=" + protectedPadding + " seed=" + worldSeed
                     + " worldWrites=0 mode=planning";
         } catch (Exception error) {
             return "core=" + VERSION + " profile=missing writes=off worldWrites=0 mode=planning";
@@ -32,13 +35,16 @@ public final class PersonalWorldGenAPI {
 
     public String worldgenSettings() {
         return "writes=" + (writesEnabled ? "on" : "off") + " writeBudget=" + writeBudget.limit()
-                + " used=" + writeBudget.used() + " remaining=" + writeBudget.remaining();
+                + " used=" + writeBudget.used() + " remaining=" + writeBudget.remaining()
+                + " protectedPadding=" + protectedPadding + " seed=" + worldSeed;
     }
 
     public void setWritesEnabled(boolean enabled) { writesEnabled = enabled; }
 
     public void setWriteBudget(int value) { writeBudget.setLimit(value); }
     public void resetWriteBudget() { writeBudget.reset(); }
+    public void setProtectedPadding(int value) { protectedPadding = Math.max(0, Math.min(16, value)); }
+    public void setWorldSeed(long value) { worldSeed = value; }
 
     private String writesDisabled() { return "writes-disabled writes=off worldWrites=0"; }
 
@@ -405,7 +411,7 @@ public final class PersonalWorldGenAPI {
             int px = ((Number) player.getClass().getMethod("getXi").invoke(player)).intValue();
             int py = ((Number) player.getClass().getMethod("getYi").invoke(player)).intValue();
             var guard = new ProtectedCells(256, profile());
-            if (!guard.allows(px, py, 32, 32, 0)) return "protected-start worldWrites=0";
+            if (!guard.allows(px, py, 32, 32, protectedPadding)) return "protected-start worldWrites=0";
         } catch (ReflectiveOperationException | java.io.IOException error) {
             return "start-guard-error=" + error.getClass().getSimpleName() + " worldWrites=0";
         }
