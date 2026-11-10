@@ -46,9 +46,9 @@ python3 tools/export_profile.py
   дедупликацию и вытеснение старых ID; добавить unit-тесты реестра.
 - Критерии: повторный `generateOnce` не генерирует; `restoreGenerated` не создаёт
   дубликаты; старые ID вытесняются; `generatedRegions` остаётся CSV.
-- Статус: `worldgen-registry`/`worldgen-plan` подтверждены на 1.18.2 (113/0).
-  1.18.3 с проверкой дороги собран и покрыт unit-тестами; игровая проверка 1.18.3
-  ещё не выполнена.
+- Статус: подтверждено в игре 11.11.2026 на 1.18.5 (113/0):
+  `worldgen-registry` PASS и `worldgen-plan campOps=8 buildingOps=768 roadPoints=77`,
+  `status=OK`, exit code 0.
 
 ## PWG-06.2 — CSV-сериализация реестра регионов
 
@@ -66,7 +66,7 @@ python3 tools/export_profile.py
 - Реализация: после `PlanValidator` проверяется каждая точка `settlement.road()`;
   при нарушении — `protected_road@x,y`.
 - Критерии: дорога через protected-клетку отклоняется, тест покрывает случай.
-- Статус: реализовано, unit-тесты PASS; в игре 1.18.3 ещё не проверялось.
+- Статус: unit-тесты PASS; полный план 1.18.5 в игре содержит roadPoints=77.
 
 ## PWG-06.5 — тестируемый planNear без игрока
 
@@ -75,7 +75,8 @@ python3 tools/export_profile.py
 - Реализация: `planNear(px,py,seed,ProtectedCells)` — чистая функция; игровой
   метод только извлекает координаты и профиль.
 - Критерии: unit-тест свободного места (camp/building/road) и protected-отказа.
-- Статус: реализовано, unit-тесты PASS; в игре 1.18.5 ещё не проверялось.
+- Статус: подтверждено в игре: `worldgen-plan` вернул campOps/buildingOps/roadPoints
+  на 1.18.5, 113/0, status=OK.
 
 ## PWG-06.4 — planNearPlayer планирует весь settlement
 
@@ -84,7 +85,8 @@ python3 tools/export_profile.py
 - Реализация: camp + building + дорога через `SettlementPlanner.planValidated`;
   вывод содержит `campOps`, `buildingOps`, `roadPoints` и `worldWrites=0`.
 - Критерии: при свободном месте — все три компонента; при protected — отказ.
-- Статус: реализовано, unit-тесты PASS; в игре 1.18.4 ещё не проверялось.
+- Статус: подтверждено в игре 1.18.5: `campOps=8 buildingOps=768 roadPoints=77`,
+  `protected=false worldWrites=0`.
 
 ## PWG-04.1 — дорога с обходом препятствий
 
@@ -94,8 +96,8 @@ python3 tools/export_profile.py
   обходные точки вокруг bounding box; пустой список, если прохода нет.
 - Критерии: маршрут не содержит blocked-точек, сохраняет связность, ограничен
   `MAX_POINTS`, одинаков для одного seed/входа.
-- Статус: реализовано, unit-тесты PASS; 1.18.3 загрузится в следующем игровом
-  прогоне, отдельная проверка ещё не добавлена.
+- Статус: реализовано, unit-тесты PASS; полный settlement содержит roadPoints=77
+  в игровом `worldgen-plan`.
 
 ## Игровой пакет
 
