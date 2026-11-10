@@ -27,6 +27,18 @@ public final class RegionRegistry {
     public String last() { return ids.isEmpty() ? "" : ids.get(ids.size() - 1); }
     public String at(int index) { return index < 0 || index >= ids.size() ? "" : ids.get(index); }
     public List<String> list() { return List.copyOf(ids); }
+
+    /** CSV in insertion order; never contains blanks or duplicates. */
+    public String csv() { return String.join(",", ids); }
+
+    /** Restores a CSV snapshot; invalid/blank/duplicate ids are ignored. */
+    public int restoreCsv(String csv) {
+        if (csv == null || csv.isBlank()) return 0;
+        int added = 0;
+        for (String id : csv.split(",")) if (remember(id.trim())) added++;
+        return added;
+    }
+
     public String summary() { return "regions=" + ids.size() + " first=" + first() + " last=" + last(); }
 
     public static String demo() {

@@ -58,11 +58,11 @@ python3 tools/export_profile.py
   проверку лимита при импорте.
 - Реализация: `RegionRegistry.csv()` и `restoreCsv()`; API использует их.
 - Критерии: round-trip, trim, дубликаты, лимит 256, пустой CSV.
-- Статус: в работе.
+- Статус: реализовано и покрыто unit-тестами (`RegionRegistryTest`).
 
 ## Игровой пакет
 
 - `42/` — B42-пакет `PersonalWorldGen`;
 - `tools/build_mod.py` собирает `42/media/java/client/PersonalWorldGen.jar`;
-- Java-ядро 1.18.0: ограниченный реестр регионов (256 ID), детерминированные
+- Java-ядро 1.18.1: ограниченный реестр регионов (256 ID, CSV round-trip), детерминированные
   планы, каталог 1.17; `worldWrites=0` без явного тестового вызова.

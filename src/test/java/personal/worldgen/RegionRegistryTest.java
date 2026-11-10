@@ -16,6 +16,14 @@ public final class RegionRegistryTest {
         assert new RegionRegistry(0).remember("x") : "Zero cap clamps to one";
         var small = new RegionRegistry(1);
         assert small.remember("x") && small.remember("y") && small.size() == 1 && small.first().equals("y");
-        System.out.println("Region registry tests passed: order, duplicate, eviction, bounds, forget and clear.");
+        var csv = new RegionRegistry(4);
+        assert csv.remember("a") && csv.remember("b");
+        assert csv.csv().equals("a,b") : "CSV must keep insertion order";
+        assert csv.restoreCsv(" b , c , a ") == 1 : "CSV restore must add only new ids";
+        assert csv.csv().equals("a,b,c") : "CSV restore must trim and deduplicate";
+        assert csv.restoreCsv("") == 0 && csv.restoreCsv(null) == 0;
+        var bounded = new RegionRegistry(2);
+        assert bounded.restoreCsv("x,y,z") == 3 && bounded.csv().equals("y,z") : "CSV restore must respect cap";
+        System.out.println("Region registry tests passed: order, duplicate, eviction, bounds, CSV restore, forget and clear.");
     }
 }

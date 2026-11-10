@@ -6,7 +6,7 @@ import java.util.concurrent.Executors;
 /** Read-only game-facing entry point. Plans data; never writes to the world yet. */
 @me.zed_0xff.zombie_buddy.Exposer.LuaClass
 public final class PersonalWorldGenAPI {
-    public static final String VERSION = "1.18.0";
+    public static final String VERSION = "1.18.1";
     private static final PersonalWorldGenAPI INSTANCE = new PersonalWorldGenAPI();
 
     private PersonalWorldGenAPI() {}
@@ -379,14 +379,11 @@ public final class PersonalWorldGenAPI {
     }
 
     public String generatedRegions() {
-        synchronized (generated) { return String.join(",", generated.list()); }
+        synchronized (generated) { return generated.csv(); }
     }
 
     public void restoreGenerated(String csv) {
-        if (csv == null || csv.isBlank()) return;
-        synchronized (generated) {
-            for (String id : csv.split(",")) if (!id.isBlank()) generated.remember(id.trim());
-        }
+        synchronized (generated) { generated.restoreCsv(csv); }
     }
 
     /** One bounded test-site pipeline: camp, road and building markers. */
