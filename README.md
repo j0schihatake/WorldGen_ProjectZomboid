@@ -51,6 +51,15 @@ python3 tools/export_profile.py
   не выполнен, потому что игра завершилась на `bWaitForAssetLoadingToFinish2`
   с `[Viewpoint] video memory: ... 106 MiB of 8192 free`.
 
+## PWG-06.2 — CSV-сериализация реестра регионов
+
+- Причина: API вручную склеивает/разбирает CSV, а `RegionRegistry` не умеет
+  сохранять и восстанавливать своё состояние; это дублирует логику и теряет
+  проверку лимита при импорте.
+- Реализация: `RegionRegistry.csv()` и `restoreCsv()`; API использует их.
+- Критерии: round-trip, trim, дубликаты, лимит 256, пустой CSV.
+- Статус: в работе.
+
 ## Игровой пакет
 
 - `42/` — B42-пакет `PersonalWorldGen`;
