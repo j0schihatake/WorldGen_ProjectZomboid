@@ -356,7 +356,13 @@ public final class PersonalWorldGenAPI {
             planResult = null;
             planner.submit(() -> {
                 try {
-                    planResult = CampPlanner.plan(new Site(x, y, 16, 16), VERSION, 42, 2);
+                    var built = CampPlanner.plan(new Site(x, y, 16, 16), VERSION, 42, 2);
+                    planResult = built;
+                    worldDb.put("plans", "site#" + built.site().x() + "#" + built.site().y(),
+                            "version=" + built.version() + " steps=" + built.steps().size());
+                    worldDb.put("regions", "region#" + built.site().x() + "#" + built.site().y(),
+                            "x=" + built.site().x() + " y=" + built.site().y()
+                                    + " w=" + built.site().width() + " h=" + built.site().height());
                     planState = "ready";
                 } catch (Throwable error) {
                     planState = "error=" + error.getClass().getSimpleName();
