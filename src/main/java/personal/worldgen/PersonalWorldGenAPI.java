@@ -48,6 +48,7 @@ public final class PersonalWorldGenAPI {
     }
 
     public String worldDbGetRegion(String id) { return worldDb.get("regions", id, ""); }
+    public String worldDbRegionIds() { return String.join(",", worldDb.regionIds()); }
 
     public boolean worldDbBackup(String target) { return worldDb.backup(java.nio.file.Path.of(target)); }
 
