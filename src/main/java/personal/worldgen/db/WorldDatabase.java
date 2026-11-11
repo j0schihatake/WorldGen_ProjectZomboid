@@ -56,15 +56,22 @@ public final class WorldDatabase {
         Files.createDirectories(path.getParent());
         Class.forName("org.sqlite.JDBC");
         connection = DriverManager.getConnection("jdbc:sqlite:" + path.toAbsolutePath());
-        try (InputStream input = WorldDatabase.class.getResourceAsStream("/personal/worldgen/db/schema.sql")) {
-            if (input != null) {
-                String sql = new String(input.readAllBytes(), StandardCharsets.UTF_8);
-                try (Statement statement = connection.createStatement()) {
-                    for (String part : sql.split(";")) if (!part.isBlank()) statement.execute(part);
-                }
-            }
+        runResource("schema.sql");
+        try (Statement statement = connection.createStatement();
+             ResultSet rows = statement.executeQuery("SELECT COUNT(*) FROM settings")) {
+            if (!rows.next() || rows.getLong(1) == 0) runResource("seed.sql");
         }
         return connection;
+    }
+
+    private void runResource(String name) throws Exception {
+        try (InputStream input = WorldDatabase.class.getResourceAsStream("/personal/worldgen/db/" + name)) {
+            if (input == null) return;
+            String sql = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+            try (Statement statement = connection.createStatement()) {
+                for (String part : sql.split(";")) if (!part.isBlank()) statement.execute(part);
+            }
+        }
     }
 
     public synchronized String getSetting(String key, String fallback) {
