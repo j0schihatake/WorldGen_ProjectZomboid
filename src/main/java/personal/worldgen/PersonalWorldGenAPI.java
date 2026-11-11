@@ -49,7 +49,8 @@ public final class PersonalWorldGenAPI {
     public String worldDbGetRegion(String id) { return worldDb.get("regions", id, ""); }
 
     public String worldDbStatus() {
-        return "writes=" + worldDb.writeCount() + " plans=" + worldDb.planCount() + " path=" + worldDb.path();
+        return "writes=" + worldDb.writeCount() + " plans=" + worldDb.planCount()
+                + " regions=" + worldDb.regionCount() + " path=" + worldDb.path();
     }
 
     public String worldDbSetting(String key, String fallback) { return worldDb.getSetting(key, fallback); }
