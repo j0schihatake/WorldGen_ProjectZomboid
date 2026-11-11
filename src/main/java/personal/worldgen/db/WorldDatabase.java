@@ -121,6 +121,12 @@ public final class WorldDatabase {
         } catch (Exception ignored) { }
     }
 
+    public synchronized int regionCount() {
+        try (Statement s = connection().createStatement(); ResultSet rows = s.executeQuery("SELECT COUNT(*) FROM regions")) {
+            return rows.next() ? rows.getInt(1) : 0;
+        } catch (Exception ignored) { return 0; }
+    }
+
     public synchronized int planCount() {
         try (Statement s = connection().createStatement(); ResultSet rows = s.executeQuery("SELECT COUNT(*) FROM plans")) {
             return rows.next() ? rows.getInt(1) : 0;
