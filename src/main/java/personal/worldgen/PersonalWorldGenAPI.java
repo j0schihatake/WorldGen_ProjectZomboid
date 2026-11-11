@@ -97,6 +97,9 @@ public final class PersonalWorldGenAPI {
             if (square == null) return "no-square";
             var plan = CampPlanner.plan(new Site(0, 0, 32, 32), VERSION, 42, 8);
             Object cell = player.getClass().getMethod("getCell").invoke(player);
+            int bx = ((Number) player.getClass().getMethod("getXi").invoke(player)).intValue();
+            int by = ((Number) player.getClass().getMethod("getYi").invoke(player)).intValue();
+            int bz = ((Number) player.getClass().getMethod("getZi").invoke(player)).intValue();
             int placed = 0;
             for (var step : plan.steps()) {
                 if (!writeBudget.take()) break;
@@ -113,6 +116,7 @@ public final class PersonalWorldGenAPI {
                     if (target == null) continue;
                     target.getClass().getMethod("AddWorldInventoryItem", String.class, float.class, float.class, float.class)
                             .invoke(target, item, 0.5f, 0.5f, 0f);
+                    worldDb.recordWrite("camp", step.kind(), bx + step.dx(), by + step.dy(), bz);
                     placed++;
                 } catch (Throwable ignored) { }
             }
@@ -143,6 +147,7 @@ public final class PersonalWorldGenAPI {
                     if (target == null) continue;
                     target.getClass().getMethod("AddWorldInventoryItem", String.class, float.class, float.class, float.class)
                             .invoke(target, "Base.Hammer", 0.5f, 0.5f, 0f);
+                    worldDb.recordWrite("road", "road", bx + point.x(), by + point.y(), bz);
                     placed++;
                 } catch (Throwable ignored) { }
             }
