@@ -67,6 +67,22 @@ public final class WorldDatabase {
         return connection;
     }
 
+    public synchronized String getSetting(String key, String fallback) {
+        if (key == null || key.isBlank()) return fallback;
+        try (PreparedStatement s = connection().prepareStatement("SELECT value FROM settings WHERE key=?")) {
+            s.setString(1, key);
+            try (ResultSet rows = s.executeQuery()) { return rows.next() ? rows.getString(1) : fallback; }
+        } catch (Exception ignored) { return fallback; }
+    }
+
+    public synchronized void setSetting(String key, String value) {
+        if (key == null || key.isBlank() || value == null) return;
+        try (PreparedStatement s = connection().prepareStatement(
+                "INSERT OR REPLACE INTO settings(key,value) VALUES(?,?)")) {
+            s.setString(1, key); s.setString(2, value); s.executeUpdate();
+        } catch (Exception ignored) { }
+    }
+
     public synchronized String schemaVersion() {
         try (Statement s = connection().createStatement();
              ResultSet rows = s.executeQuery("SELECT value FROM meta WHERE key='schema_version'")) {

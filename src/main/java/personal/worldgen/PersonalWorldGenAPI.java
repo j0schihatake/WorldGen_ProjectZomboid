@@ -52,6 +52,9 @@ public final class PersonalWorldGenAPI {
         return "writes=" + worldDb.writeCount() + " path=" + worldDb.path();
     }
 
+    public String worldDbSetting(String key, String fallback) { return worldDb.getSetting(key, fallback); }
+    public void worldDbSetSetting(String key, String value) { worldDb.setSetting(key, value); }
+
     public String worldgenSettings() {
         return "writes=" + (writesEnabled ? "on" : "off") + " writeBudget=" + writeBudget.limit()
                 + " used=" + writeBudget.used() + " remaining=" + writeBudget.remaining()

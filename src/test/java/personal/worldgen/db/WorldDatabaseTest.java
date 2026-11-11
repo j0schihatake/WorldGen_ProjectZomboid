@@ -6,6 +6,8 @@ public final class WorldDatabaseTest {
     public static void run() throws Exception {
         var db = new WorldDatabase(Files.createTempDirectory("pwg-db").resolve("world.db"));
         assert "1".equals(db.schemaVersion());
+        db.setSetting("writes","off");
+        assert "off".equals(db.getSetting("writes","on"));
         db.put("plans", "site#1", "camp=8");
         db.put("plans", "site#1", "camp=9");
         assert "camp=9".equals(db.get("plans", "site#1", ""));
