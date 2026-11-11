@@ -26,7 +26,7 @@ public final class PersonalWorldGenAPI {
             return "core=" + VERSION + " profileCells=" + profile.cells().size()
                     + " profileVersion=" + profile.gameVersion()
                     + " writes=" + (writesEnabled ? "on" : "off")
-                    + " writeBudget=" + writeBudget.limit() + " writeBudgetUsed=" + writeBudget.used()
+                    + " writeBudget=" + writeBudget.limit() + " writeBudgetUsed=" + writeBudget.used() + " worldDbWrites=" + worldDb.writeCount()
                     + " protectedPadding=" + protectedPadding + " seed=" + worldSeed
                     + " worldWrites=0 mode=planning";
         } catch (Exception error) {
@@ -449,9 +449,12 @@ public final class PersonalWorldGenAPI {
             String road = placeRealRoad(player);
             String building = placeRealBuilding(player);
             String wall = placeRealWall(player);
-            return "start camp=" + camp + " road=" + road + " building=" + building + " wall=" + wall
+            String result = "start camp=" + camp + " road=" + road + " building=" + building + " wall=" + wall
                     + " budget=" + writeBudget.limit() + " used=" + writeBudget.used()
                     + " remaining=" + writeBudget.remaining();
+            worldDb.put("plans", "start-site", result);
+            worldDb.put("regions", "start-site", "camp=" + countPlaced(camp) + " road=" + countPlaced(road));
+            return result;
         } finally {
             batchWrite = false;
         }
@@ -467,8 +470,10 @@ public final class PersonalWorldGenAPI {
         batchWrite = true;
         try {
             String camp = placeCamp(player);
-            return "generated " + id + " " + camp
+            String result = "generated " + id + " " + camp
                     + " budget=" + writeBudget.limit() + " used=" + writeBudget.used();
+            worldDb.put("plans", id, result);
+            return result;
         } finally {
             batchWrite = false;
         }
