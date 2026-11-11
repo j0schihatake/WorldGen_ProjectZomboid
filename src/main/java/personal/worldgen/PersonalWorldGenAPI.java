@@ -379,6 +379,11 @@ public final class PersonalWorldGenAPI {
         if (plan == null) return "not-ready";
         if (player == null) return "no-player";
         int budget = Math.max(1, Math.min(8, maxOps));
+        worldDb.put("plans", "site#" + plan.site().x() + "#" + plan.site().y(),
+                "version=" + plan.version() + " steps=" + plan.steps().size());
+        worldDb.put("regions", "region#" + plan.site().x() + "#" + plan.site().y(),
+                "x=" + plan.site().x() + " y=" + plan.site().y()
+                        + " w=" + plan.site().width() + " h=" + plan.site().height());
         try {
             Object cell = player.getClass().getMethod("getCell").invoke(player);
             int placed = 0;
