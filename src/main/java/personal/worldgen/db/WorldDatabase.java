@@ -16,6 +16,7 @@ public final class WorldDatabase {
     private static volatile String activeSave = "";
     private final Path path;
     private Connection connection;
+    private final java.util.Map<String, String> settingsCache = new java.util.concurrent.ConcurrentHashMap<>();
 
     public WorldDatabase(Path path) { this.path = path; }
 
@@ -87,6 +88,7 @@ public final class WorldDatabase {
         try (PreparedStatement s = connection().prepareStatement(
                 "INSERT OR REPLACE INTO settings(key,value) VALUES(?,?)")) {
             s.setString(1, key); s.setString(2, value); s.executeUpdate();
+            settingsCache.put(key, value);
         } catch (Exception ignored) { }
     }
 
