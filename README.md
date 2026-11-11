@@ -37,6 +37,15 @@ python3 tools/export_profile.py
 `profile.tsv` — локальный (в `.gitignore`); `MapProfileIO` загружает его в Java,
 `ProtectedCells` использует как запрет записи. На текущем наборе — 130 клеток.
 
+## PWG-DB-001 — SQLite checkpoint
+
+- `PersonalWorldGen.db` на каждое сохранение: `regions`, `plans`, `writes`, `settings`, `meta`;
+- seed `.sql`, миграция версии, backup API;
+- `profile.tsv` в git/JAR;
+- `writes` пишут camp/road/building/wall, `plans` — start/once/test-site;
+- unit PASS;
+- игровой прогон отложен до 300 изменений.
+
 ## PWG-DB-001 — SQLite на каждое сохранение
 
 - Реализация: `WorldDatabase` в `getSaveFolder()/PersonalWorldGen.db`,
