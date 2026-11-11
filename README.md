@@ -44,7 +44,7 @@ python3 tools/export_profile.py
 - `profile.tsv` в git/JAR;
 - `writes` пишут camp/road/building/wall, `plans` — start/once/test-site;
 - unit PASS;
-- игра 2026-11-11: `summary passed=119 failed=0`; `PersonalWorldGen.db` и `.bak` созданы в `Saves/Sandbox/<world>`; log `[PersonalWorldGen][db] switch`.
+- игра 2026-11-11: per-save `PersonalWorldGen.db` содержит `plans=1`, `regions=1`, `writes=8`, `settings=3`; log `[PersonalWorldGen][db] switch`.
 
 ## PWG-DB-001 — SQLite на каждое сохранение
 
