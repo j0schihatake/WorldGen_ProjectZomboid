@@ -328,6 +328,8 @@ public final class WorldGenTest {
         budget.setLimit(0);
         assert budget.limit() == 1;
         personal.worldgen.db.WorldDatabaseTest.run();
+        assert PersonalWorldGenAPI.class.getResourceAsStream("/personal/worldgen/profile.tsv") != null
+                : "Map profile resource must ship in the jar";
         var api = PersonalWorldGenAPI.getInstance();
         assert api.status().contains("writes=off") : "WorldGen writes must default to off";
         assert api.worldgenSettings().contains("writes=off");
