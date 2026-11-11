@@ -44,7 +44,7 @@ python3 tools/export_profile.py
 - `profile.tsv` в git/JAR;
 - `writes` пишут camp/road/building/wall, `plans` — start/once/test-site;
 - unit PASS;
-- игровой прогон отложен до 300 изменений.
+- игра 2026-11-11: `summary passed=119 failed=0`; `PersonalWorldGen.db` и `.bak` созданы в `Saves/Sandbox/<world>`; log `[PersonalWorldGen][db] switch`.
 
 ## PWG-DB-001 — SQLite на каждое сохранение
 
@@ -52,7 +52,7 @@ python3 tools/export_profile.py
   `schema.sql`; таблицы `regions`, `plans`, `writes`; API `worldDbPutPlan`,
   `worldDbPutRegion`, `worldDbStatus`.
 - Unit: `World database tests passed: plans upsert, regions and deduplicated writes.`
-- Статус: код и unit PASS в staging-копии; автозапись генерации и игра ещё нет.
+- Статус: [x] per-save БД проверена в игре; запись worldgen-объектов подтверждена через `worldgen-write camp=8 worldWrites=8`.
 
 ## PWG-06.6 — запись только по явному разрешению
 
