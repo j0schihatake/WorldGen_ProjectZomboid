@@ -485,6 +485,13 @@ public final class PersonalWorldGenAPI {
         }
     }
 
+    public String worldDbLoadSettings() {
+        if ("true".equalsIgnoreCase(worldDb.getSetting("writesEnabled", "false"))) writesEnabled = true;
+        try { setWriteBudget(Integer.parseInt(worldDb.getSetting("writeBudget", "256"))); } catch (NumberFormatException ignored) { }
+        try { setProtectedPadding(Integer.parseInt(worldDb.getSetting("protectedPadding", "0"))); } catch (NumberFormatException ignored) { }
+        return worldgenSettings();
+    }
+
     public String worldDbLoadRegions() {
         var csv = worldDb.get("regions", "registry", "");
         if (!csv.isBlank()) restoreGenerated(csv);
