@@ -67,6 +67,13 @@ public final class WorldDatabase {
         return connection;
     }
 
+    public synchronized String schemaVersion() {
+        try (Statement s = connection().createStatement();
+             ResultSet rows = s.executeQuery("SELECT value FROM meta WHERE key='schema_version'")) {
+            return rows.next() ? rows.getString(1) : "0";
+        } catch (Exception ignored) { return "0"; }
+    }
+
     public synchronized void put(String table, String id, String data) {
         if (id == null || data == null) return;
         try (PreparedStatement s = connection().prepareStatement(
