@@ -192,6 +192,7 @@ public final class PersonalWorldGenAPI {
                 Object object = objectClass.getConstructor(squareClass, String.class)
                         .newInstance(target, sprite);
                 object.getClass().getMethod("addToWorld").invoke(object);
+                worldDb.recordWrite("building", step.kind(), bx + step.dx(), by + step.dy(), bz);
                 if ("wall".equals(step.kind())) walls++;
                 else if ("floor".equals(step.kind())) floors++;
                 else doors++;
@@ -224,6 +225,7 @@ public final class PersonalWorldGenAPI {
                 Object object = objectClass.getConstructor(squareClass, String.class)
                         .newInstance(target, "floors_exterior_street_01_0");
                 object.getClass().getMethod("addToWorld").invoke(object);
+                worldDb.recordWrite("road", "road", bx + point.x(), by + point.y(), bz);
                 placed++;
             }
             return "realRoad=" + placed + " worldWrites=" + placed;
@@ -258,6 +260,7 @@ public final class PersonalWorldGenAPI {
                 Object object = objectClass.getConstructor(squareClass, String.class)
                         .newInstance(target, sprite);
                 object.getClass().getMethod("addToWorld").invoke(object);
+                worldDb.recordWrite("camp", step.kind(), bx + step.dx(), by + step.dy(), bz);
                 placed++;
             }
             return "realCamp=" + placed + " worldWrites=" + placed;
@@ -542,6 +545,7 @@ public final class PersonalWorldGenAPI {
                 Object object = objectClass.getConstructor(squareClass, String.class)
                         .newInstance(target, "walls_exterior_house_01_0");
                 object.getClass().getMethod("addToWorld").invoke(object);
+                worldDb.recordWrite("wall", "wall", bx + 3 + i, by + 3, bz);
                 placed++;
             }
             return "realWalls=" + placed + " worldWrites=" + placed;
