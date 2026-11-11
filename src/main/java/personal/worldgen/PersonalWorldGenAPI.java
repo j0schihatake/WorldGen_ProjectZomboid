@@ -459,7 +459,7 @@ public final class PersonalWorldGenAPI {
                     + " budget=" + writeBudget.limit() + " used=" + writeBudget.used()
                     + " remaining=" + writeBudget.remaining();
             worldDb.put("plans", "start-site", result);
-            worldDb.put("regions", "start-site", "camp=" + countPlaced(camp) + " road=" + countPlaced(road));
+            worldDb.put("regions", "registry", generated.csv());
             return result;
         } finally {
             batchWrite = false;
@@ -483,6 +483,12 @@ public final class PersonalWorldGenAPI {
         } finally {
             batchWrite = false;
         }
+    }
+
+    public String worldDbLoadRegions() {
+        var csv = worldDb.get("regions", "registry", "");
+        if (!csv.isBlank()) restoreGenerated(csv);
+        return "regions=" + generated.csv().split(",").length + " loaded=" + (csv.isBlank() ? 0 : 1);
     }
 
     public String generatedRegions() {
