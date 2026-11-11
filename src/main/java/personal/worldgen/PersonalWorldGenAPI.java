@@ -40,6 +40,7 @@ public final class PersonalWorldGenAPI {
     }
 
     public String worldDbGetPlan(String id) { return worldDb.get("plans", id, ""); }
+    public String worldDbPlanIds() { return String.join(",", worldDb.planIds()); }
 
     public String worldDbPutRegion(String id, String data) {
         worldDb.put("regions", id, data);

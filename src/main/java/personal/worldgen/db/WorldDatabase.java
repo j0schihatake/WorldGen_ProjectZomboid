@@ -121,6 +121,15 @@ public final class WorldDatabase {
         } catch (Exception ignored) { }
     }
 
+    public synchronized java.util.List<String> planIds() {
+        var result = new java.util.ArrayList<String>();
+        try (Statement s = connection().createStatement();
+             ResultSet rows = s.executeQuery("SELECT id FROM plans ORDER BY id")) {
+            while (rows.next()) result.add(rows.getString(1));
+        } catch (Exception ignored) { }
+        return result;
+    }
+
     public synchronized int regionCount() {
         try (Statement s = connection().createStatement(); ResultSet rows = s.executeQuery("SELECT COUNT(*) FROM regions")) {
             return rows.next() ? rows.getInt(1) : 0;

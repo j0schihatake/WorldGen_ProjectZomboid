@@ -18,6 +18,7 @@ public final class WorldDatabaseTest {
         db.recordWrite("site#1", "camp", 10, 20, 0);
         assert db.writeCount() == 1;
         assert db.planCount() == 1;
+        assert db.planIds().contains("site#1");
         assert db.regionCount() == 1;
         assert db.backup(Files.createTempDirectory("pwg-backup").resolve("world.db"));
         System.out.println("World database tests passed: plans upsert, regions and deduplicated writes.");
