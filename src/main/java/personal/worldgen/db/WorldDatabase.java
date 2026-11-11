@@ -14,7 +14,7 @@ import java.sql.Statement;
 public final class WorldDatabase {
     private static volatile WorldDatabase instance;
     private static volatile String activeSave = "";
-    private final Path path;
+    private volatile Path path;
     private Connection connection;
     private final java.util.Map<String, String> settingsCache = new java.util.concurrent.ConcurrentHashMap<>();
 
@@ -162,6 +162,17 @@ public final class WorldDatabase {
     public synchronized void close() { try { if (connection != null) connection.close(); } catch (Exception ignored) { } connection = null; }
     public synchronized boolean backupNow() {
         return backup(path.resolveSibling(path.getFileName() + ".bak"));
+    }
+
+    public synchronized void useSave(String folder) {
+        if (folder == null || folder.isBlank()) return;
+        var target = Path.of(folder).resolve("PersonalWorldGen.db");
+        if (!target.isAbsolute() || target.equals(path)) return;
+        close();
+        path = target;
+        activeSave = folder;
+        settingsCache.clear();
+        System.out.println("[PersonalWorldGen][db] switch " + target);
     }
 
     public synchronized boolean backup(Path target) {
