@@ -165,8 +165,6 @@ public final class WorldDatabase {
     public synchronized boolean backup(Path target) {
         if (target == null) return false;
         try {
-            if (connection != null) connection.close();
-            connection = null;
             Files.createDirectories(target.getParent());
             Files.copy(path, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
             return true;
