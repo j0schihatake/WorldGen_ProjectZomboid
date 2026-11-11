@@ -22,6 +22,7 @@ public final class WorldDatabaseTest {
         assert db.regionCount() == 1;
         assert db.regionIds().contains("region#1");
         assert db.backup(Files.createTempDirectory("pwg-backup").resolve("world.db"));
+        assert db.backupNow();
         System.out.println("World database tests passed: plans upsert, regions and deduplicated writes.");
     }
 }

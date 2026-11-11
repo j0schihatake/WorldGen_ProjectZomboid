@@ -51,6 +51,7 @@ public final class PersonalWorldGenAPI {
     public String worldDbRegionIds() { return String.join(",", worldDb.regionIds()); }
 
     public boolean worldDbBackup(String target) { return worldDb.backup(java.nio.file.Path.of(target)); }
+    public boolean worldDbBackupNow() { return worldDb.backupNow(); }
 
     public String worldDbStatus() {
         return "writes=" + worldDb.writeCount() + " plans=" + worldDb.planCount()

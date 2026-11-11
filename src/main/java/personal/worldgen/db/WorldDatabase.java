@@ -158,6 +158,10 @@ public final class WorldDatabase {
     }
 
     public synchronized void close() { try { if (connection != null) connection.close(); } catch (Exception ignored) { } connection = null; }
+    public synchronized boolean backupNow() {
+        return backup(path.resolveSibling(path.getFileName() + ".bak"));
+    }
+
     public synchronized boolean backup(Path target) {
         if (target == null) return false;
         try {
