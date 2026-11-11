@@ -634,6 +634,12 @@ public final class PersonalWorldGenAPI {
         } catch (IllegalArgumentException protectedPlan) {
             return "x=" + x + " y=" + y + " protected=true worldWrites=0";
         }
+        worldDb.put("plans", "near#" + x + "#" + y,
+                "version=" + VERSION + " campOps=" + settlement.camp().operations()
+                        + " buildingOps=" + settlement.building().steps().size()
+                        + " roadPoints=" + settlement.road().size());
+        worldDb.put("regions", "near#" + x + "#" + y,
+                "x=" + x + " y=" + y + " w=32 h=32");
         return "x=" + x + " y=" + y + " campOps=" + settlement.camp().operations()
                 + " buildingOps=" + settlement.building().steps().size()
                 + " roadPoints=" + settlement.road().size()
